@@ -15,6 +15,7 @@ pre-commit = "*"
 sphinx = "*"
 sphinx-autoapi = "*"
 sphinx-rtd-theme = "*"
+pytest = "^7.4.0"
 
 [build-system]
 requires = ["poetry-core"]
