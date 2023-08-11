@@ -7,6 +7,7 @@ readme = "documentation/source/index.rst"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+fastapi = "^0.101.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.*"
