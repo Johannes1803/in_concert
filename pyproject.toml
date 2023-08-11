@@ -16,6 +16,7 @@ sphinx = "*"
 sphinx-autoapi = "*"
 sphinx-rtd-theme = "*"
 pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
 
 [build-system]
 requires = ["poetry-core"]
