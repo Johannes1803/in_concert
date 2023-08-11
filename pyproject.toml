@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "in_concert"
+version = "0.1.0"
+description = ""
+authors = ["Johannes Birk <Johannes.Birk11@web.de>"]
+readme = "documentation/source/index.rst"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "22.*"
+flake8 = "6.*"
+pre-commit = "*"
+sphinx = "*"
+sphinx-autoapi = "*"
+sphinx-rtd-theme = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+
+[tool.flake8]
+ignore = "E203"
+max-line-length = 120
+
+[tool.isort]
+profile = "black"

@@ -1,0 +1,32 @@
+version: 1
+disable_existing_loggers: False # To avoid disabling loggers existing prior to this config is loaded
+handlers:
+  console:
+    class: logging.StreamHandler
+    stream: ext://sys.stderr # write to console
+    formatter: basic # how are the messages formatted?
+  audit_file:
+    class: logging.FileHandler
+    filename: logs/audit/audits.log
+    encoding: utf-8
+    formatter: detailed
+formatters:
+  basic:
+    style: "{"
+    format: "{levelname:s}:{name:s}:{message:s}"
+  detailed:
+    style: "{"
+    format: "{levelname:s}:{name:s}:{asctime:s}:{message:s}"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+loggers: # name of loggers
+  audit: # match loggers by name (here, e.g. audit is the root logger level and audit.Car the child level logger)
+    handlers: [console,audit_file] # handlers determine where the logs are written to
+    level: INFO
+    propagate: False
+  audit.Car:
+    handlers: [ console ]
+    level: DEBUG
+    propagate: False # set to false to avoid duplicate output from parent logger ('audit')
+root: # if the logger name matches no key under loggers, this configuration applies
+  handlers: [console]
+  level: INFO
