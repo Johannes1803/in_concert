@@ -45,7 +45,7 @@ class JwkTokenVerifier:
     def verify(self, token: str) -> dict:
         """
         Verifies the token and returns the payload if successful.
-        If unsuccessful, returns a dict with a status code.
+
         param: token: The token to verify
         return: dict: The payload if successful
         raises: jwt.exceptions.DecodeError if decoding the signing key or the token fails
