@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from fastapi import HTTPException
 
-from in_concert.authorization import HTTPBearerWithCookie
+from in_concert.authorization import HTTPBearerWithCookie, JwkTokenVerifier
 
 
 class TestHTTPBearerWithCookie:
@@ -44,3 +44,27 @@ class TestHTTPBearerWithCookie:
         with pytest.raises(HTTPException) as e:
             _ = await bearer(request_obj_no_token)
             assert e.status_code == 401
+
+
+class TestJwkTokenVerifier:
+    @pytest.fixture
+    def settings(self):
+        return mock.MagicMock()
+
+    @pytest.fixture
+    def jwks_client(self):
+        jwks_client = mock.MagicMock()
+        jwks_client.get_signing_key_from_jwt.return_value = mock.MagicMock(return_value=mock.MagicMock(key="valid_key"))
+        return jwks_client
+
+    @pytest.fixture
+    def decoder(self):
+        return mock.MagicMock()
+
+    def test_valid_token_should_return_payload(self, settings, jwks_client, decoder):
+        token_verifier = JwkTokenVerifier(settings, jwks_client, decoder=decoder)
+
+        token_verifier.verify("valid_token")
+        jwks_client.get_signing_key_from_jwt.assert_called_once_with("valid_token")
+
+    # signing_key = self.jwks_client.get_signing_key_from_jwt(token).key

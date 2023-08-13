@@ -50,4 +50,4 @@ class JwkTokenVerifier:
         return: dict: The payload if successful
         raises: jwt.exceptions.DecodeError: If the token is invalid
         """
-        pass
+        _ = self.jwks_client.get_signing_key_from_jwt(token).key
