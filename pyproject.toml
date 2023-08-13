@@ -10,6 +10,7 @@ python = "^3.10"
 fastapi = "^0.101.0"
 authlib = "^1.2.1"
 httpx = "^0.24.1"
+pyjwt = "^2.8.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.*"

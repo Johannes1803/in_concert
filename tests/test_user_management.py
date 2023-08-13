@@ -42,7 +42,7 @@ class TestUserManagerJWT:
         is_authorized = await user_manager.is_authorized_current_user(request_obj)
         assert is_authorized
 
-        assert bearer.called_once()
+        assert await bearer.called_once()
         assert token_verifier.verify.called_once_with("valid_token")
 
     @pytest.mark.asyncio
@@ -54,4 +54,4 @@ class TestUserManagerJWT:
             _ = await user_manager.is_authorized_current_user(request_obj)
             assert excinfo.status_code == 401
 
-        assert bearer_invalid.called_once()
+        assert await bearer_invalid.called_once()
