@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
+import jwt
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from in_concert.authorization import JwkTokenVerifier
@@ -44,6 +45,9 @@ class UserManagerJWT(UserManager):
         :return: true if authorized, false otherwise
         """
         http_credentials: HTTPAuthorizationCredentials = await self.bearer(request)
-        token = http_credentials.credentials
-        payload = self.token_verifier.verify(token)
+        token: str = http_credentials.credentials
+        try:
+            payload = self.token_verifier.verify(token)
+        except jwt.PyJWTError as exc_info:
+            raise HTTPException(status_code=401, detail=f"{exc_info}")
         return True if payload else False
