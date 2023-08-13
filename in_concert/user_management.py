@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Request
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from in_concert.authorization import JwkTokenVerifier
 
@@ -43,4 +43,7 @@ class UserManagerJWT(UserManager):
         :param scope: scope to grant access to
         :return: true if authorized, false otherwise
         """
-        pass
+        http_credentials: HTTPAuthorizationCredentials = await self.bearer(request)
+        token = http_credentials.credentials
+        payload = self.token_verifier.verify(token)
+        return True if payload else False
