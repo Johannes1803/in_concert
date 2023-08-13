@@ -1,5 +1,6 @@
 from unittest import mock
 
+import jwt
 import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
@@ -34,6 +35,12 @@ class TestUserManagerJWT:
         token_verifier.verify.return_value = {"payload": "valid_payload"}
         return token_verifier
 
+    @pytest.fixture
+    def token_verifier_decode_error(self):
+        token_verifier = mock.MagicMock()
+        token_verifier.verify.side_effect = jwt.DecodeError("Invalid token")
+        return token_verifier
+
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token(
         self, token_verifier, bearer, oauth, request_obj
@@ -55,3 +62,15 @@ class TestUserManagerJWT:
             assert excinfo.status_code == 401
 
         assert await bearer_invalid.called_once()
+
+    @pytest.mark.asyncio
+    async def test_is_authorized_current_user_should_raise_401_if_decode_error(
+        self, token_verifier_decode_error, bearer, oauth, request_obj
+    ):
+        user_manager = UserManagerJWT(token_verifier_decode_error, bearer, oauth)
+        with pytest.raises(HTTPException) as excinfo:
+            _ = await user_manager.is_authorized_current_user(request_obj)
+            assert excinfo.status_code == 401
+
+        assert await bearer.called_once()
+        assert token_verifier_decode_error.verify.called_once_with("valid_token")
