@@ -48,6 +48,16 @@ class JwkTokenVerifier:
         If unsuccessful, returns a dict with a status code.
         param: token: The token to verify
         return: dict: The payload if successful
-        raises: jwt.exceptions.DecodeError: If the token is invalid
+        raises: jwt.exceptions.DecodeError if decoding the signing key or the token fails
+        raises: jwt.exceptions.InvalidSignatureError if the signature is invalid
+        raises: jwt.exceptions.ExpiredSignatureError if the token is expired
         """
-        _ = self.jwks_client.get_signing_key_from_jwt(token).key
+        signing_key = self.jwks_client.get_signing_key_from_jwt(token).key
+        payload = self.decoder(
+            token,
+            signing_key,
+            algorithms=self.settings.algorithms,
+            audience=self.settings.audience,
+            issuer=self.settings.issuer,
+        )
+        return payload

@@ -59,12 +59,13 @@ class TestJwkTokenVerifier:
 
     @pytest.fixture
     def decoder(self):
-        return mock.MagicMock()
+        return mock.MagicMock(return_value={"payload": "valid_payload"})
 
     def test_valid_token_should_return_payload(self, settings, jwks_client, decoder):
         token_verifier = JwkTokenVerifier(settings, jwks_client, decoder=decoder)
 
-        token_verifier.verify("valid_token")
+        payload = token_verifier.verify("valid_token")
         jwks_client.get_signing_key_from_jwt.assert_called_once_with("valid_token")
 
-    # signing_key = self.jwks_client.get_signing_key_from_jwt(token).key
+        decoder.assert_called_once()
+        assert payload == {"payload": "valid_payload"}
