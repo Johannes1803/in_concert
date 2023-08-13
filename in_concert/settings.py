@@ -33,5 +33,4 @@ class Auth0SettingsDev(Auth0Settings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env.dev", extra="ignore")
 
 
-settings = Auth0SettingsTest()
-print
+test_settings_auth = Auth0SettingsTest()
