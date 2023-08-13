@@ -10,3 +10,4 @@ exclude =
     documentation/source/conf.py,
     # The old directory contains Flake8 2.0
     .venv
+per-file-ignores = **/**/__init__.py:F401
