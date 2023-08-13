@@ -5,7 +5,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from in_concert.user_management import UserManagerJWT
+from in_concert.auth.user_management import UserManagerJWT
 
 
 class TestUserManagerJWT:
