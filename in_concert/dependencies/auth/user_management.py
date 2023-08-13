@@ -5,7 +5,7 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from in_concert.auth.authorization import JwkTokenVerifier
+from in_concert.dependencies.auth.authorization import JwkTokenVerifier
 
 
 class UserManager(ABC):
