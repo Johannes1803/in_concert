@@ -2,13 +2,12 @@ name: test
 env:
   ENV: true
   ALGORITHMS: ${{ secrets.ALGORITHMS }}
-  API_AUDIENCE: ${{ secrets.API_AUDIENCE }}
+  API_AUDIENCE: ${{ vars.API_AUDIENCE }}
   APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
   AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
   AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-  AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-  BEARER_TOKEN_UNAUTHORIZED: ${{ secrets.BEARER_TOKEN_UNAUTHORIZED }}
-  ISSUER: ${{ secrets.ISSUER }}
+  AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
+  ISSUER: ${{ vars.ISSUER }}
 
 permissions: read-all
 
