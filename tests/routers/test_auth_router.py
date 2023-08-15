@@ -18,8 +18,9 @@ class TestAuthRouter:
     @pytest.fixture
     def oauth(self):
         oauth = OAuth()
-        oauth.auth0 = mock.MagicMock()
+        oauth.auth0 = mock.AsyncMock()
         oauth.auth0.authorize_redirect = mock.AsyncMock(return_value=Response(status_code=302))
+        oauth.auth0.authorize_access_token = mock.AsyncMock(return_value={"access_token": "valid_token"})
         oauth.register = mock.MagicMock()
         return oauth
 
@@ -32,3 +33,12 @@ class TestAuthRouter:
     def test_login(self, client):
         response = client.get("/login")
         assert response.status_code == 302
+
+    @pytest.mark.asyncio
+    async def test_callback_sets_token_as_cookie(self, client, oauth):
+        response = client.get("/callback", allow_redirects=False)
+
+        oauth.auth0.authorize_access_token.assert_called_once()
+        assert response.status_code == 307
+
+        assert response.cookies["access_token"] == '"Bearer valid_token"'
