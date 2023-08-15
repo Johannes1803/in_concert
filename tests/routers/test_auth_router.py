@@ -29,14 +29,13 @@ class TestAuthRouter:
         router = create_router(test_settings_auth, oauth=oauth)
         return TestClient(router)
 
-    @pytest.mark.asyncio
     def test_login(self, client):
         response = client.get("/login")
         assert response.status_code == 302
 
     @pytest.mark.asyncio
     async def test_callback_sets_token_as_cookie(self, client, oauth):
-        response = client.get("/callback", allow_redirects=False)
+        response = client.get("/callback", follow_redirects=False)
 
         oauth.auth0.authorize_access_token.assert_called_once()
         assert response.status_code == 307
