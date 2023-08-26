@@ -46,7 +46,7 @@ class TestUserAuthorizerJWT:
         self, token_verifier, bearer, oauth, request_obj
     ):
         user_manager = UserAuthorizerJWT(token_verifier, bearer, oauth)
-        is_authorized = await user_manager.is_authorized_current_user(request_obj)
+        is_authorized = await user_manager.is_authenticated_current_user(request_obj)
         assert is_authorized
 
         assert await bearer.called_once()
@@ -58,7 +58,7 @@ class TestUserAuthorizerJWT:
     ):
         user_manager = UserAuthorizerJWT(token_verifier, bearer_invalid, oauth)
         with pytest.raises(HTTPException) as excinfo:
-            _ = await user_manager.is_authorized_current_user(request_obj)
+            _ = await user_manager.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
 
         assert await bearer_invalid.called_once()
@@ -69,7 +69,7 @@ class TestUserAuthorizerJWT:
     ):
         user_manager = UserAuthorizerJWT(token_verifier_decode_error, bearer, oauth)
         with pytest.raises(HTTPException) as excinfo:
-            _ = await user_manager.is_authorized_current_user(request_obj)
+            _ = await user_manager.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
 
         assert await bearer.called_once()

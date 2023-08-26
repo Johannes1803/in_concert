@@ -14,12 +14,11 @@ class UserAuthorizer(ABC):
     """
 
     @abstractmethod
-    async def is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
+    async def is_authenticated_current_user(self, request: Request) -> bool:
         """
         Implement this method to determine if current user is authorized for specified scope.
 
         :param request: starlette request object
-        :param scope: scope to grant access to
         :return: true if authorized, false otherwise
         """
         pass
@@ -36,7 +35,16 @@ class UserAuthorizerJWT(UserAuthorizer):
         self.oauth = oauth
         super().__init__()
 
-    async def is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
+    async def is_authenticated_current_user(self, request: Request) -> bool:
+        """
+        Determine whether current user is authenticated for specified scope.
+
+        :param request: starlette request object
+        :return: true if authenticated, false otherwise
+        """
+        return await self._is_authorized_current_user(request, scope="")
+
+    async def _is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
         """
         Determine whether current user is authorized for specified scope.
 
