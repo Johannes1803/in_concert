@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from fastapi import HTTPException
 
-from in_concert.dependencies.auth.authorization import (
+from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
