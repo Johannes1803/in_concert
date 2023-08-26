@@ -3,16 +3,17 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from in_concert.app.app_factory import create_app
+from in_concert.settings import test_settings_auth
 
 
 class TestApp:
     @pytest.fixture
     def client(self):
-        app = create_app()
+        app = create_app(test_settings_auth)
         return TestClient(app)
 
     def test_get_app_should_return_fast_api_app(self):
-        app = create_app()
+        app = create_app(test_settings_auth)
         assert app
         assert isinstance(app, FastAPI)
 
@@ -20,3 +21,7 @@ class TestApp:
         response = client.get("/")
         assert response.status_code == 200
         assert response.json()
+
+    def test_get_private_route_non_logged_in_should_return_401(self, client):
+        response = client.get("/private")
+        assert response.status_code == 401
