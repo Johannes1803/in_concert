@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 import jwt
-from authlib.integrations.starlette_client import OAuth
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -29,10 +28,9 @@ class UserAuthorizerJWT(UserAuthorizer):
     Manage the authorization of the current user based on authorization with JWT tokens in oauth2 model.
     """
 
-    def __init__(self, token_verifier: JwkTokenVerifier, bearer: HTTPBearer, oauth: OAuth) -> None:
+    def __init__(self, token_verifier: JwkTokenVerifier, bearer: HTTPBearer) -> None:
         self.token_verifier = token_verifier
         self.bearer = bearer
-        self.oauth = oauth
         super().__init__()
 
     async def is_authenticated_current_user(self, request: Request) -> bool:

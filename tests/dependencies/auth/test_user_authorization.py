@@ -26,10 +26,6 @@ class TestUserAuthorizerJWT:
         return async_mock
 
     @pytest.fixture
-    def oauth(self):
-        return mock.MagicMock()
-
-    @pytest.fixture
     def token_verifier(self):
         token_verifier = mock.MagicMock()
         token_verifier.verify.return_value = {"payload": "valid_payload"}
@@ -43,9 +39,9 @@ class TestUserAuthorizerJWT:
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token(
-        self, token_verifier, bearer, oauth, request_obj
+        self, token_verifier, bearer, request_obj
     ):
-        user_manager = UserAuthorizerJWT(token_verifier, bearer, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier, bearer)
         is_authorized = await user_manager.is_authenticated_current_user(request_obj)
         assert is_authorized
 
@@ -54,9 +50,9 @@ class TestUserAuthorizerJWT:
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_raise_401_if_malformatted_jwt_token(
-        self, token_verifier, bearer_invalid, oauth, request_obj
+        self, token_verifier, bearer_invalid, request_obj
     ):
-        user_manager = UserAuthorizerJWT(token_verifier, bearer_invalid, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier, bearer_invalid)
         with pytest.raises(HTTPException) as excinfo:
             _ = await user_manager.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
@@ -65,9 +61,9 @@ class TestUserAuthorizerJWT:
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_raise_401_if_decode_error(
-        self, token_verifier_decode_error, bearer, oauth, request_obj
+        self, token_verifier_decode_error, bearer, request_obj
     ):
-        user_manager = UserAuthorizerJWT(token_verifier_decode_error, bearer, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier_decode_error, bearer)
         with pytest.raises(HTTPException) as excinfo:
             _ = await user_manager.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
