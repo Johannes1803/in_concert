@@ -5,10 +5,10 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from in_concert.dependencies.auth.user_management import UserManagerJWT
+from in_concert.dependencies.auth.user_authorization import UserAuthorizerJWT
 
 
-class TestUserManagerJWT:
+class TestUserAuthorizerJWT:
     @pytest.fixture
     def request_obj(self):
         return mock.MagicMock()
@@ -45,7 +45,7 @@ class TestUserManagerJWT:
     async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token(
         self, token_verifier, bearer, oauth, request_obj
     ):
-        user_manager = UserManagerJWT(token_verifier, bearer, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier, bearer, oauth)
         is_authorized = await user_manager.is_authorized_current_user(request_obj)
         assert is_authorized
 
@@ -56,7 +56,7 @@ class TestUserManagerJWT:
     async def test_is_authorized_current_user_should_raise_401_if_malformatted_jwt_token(
         self, token_verifier, bearer_invalid, oauth, request_obj
     ):
-        user_manager = UserManagerJWT(token_verifier, bearer_invalid, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier, bearer_invalid, oauth)
         with pytest.raises(HTTPException) as excinfo:
             _ = await user_manager.is_authorized_current_user(request_obj)
             assert excinfo.status_code == 401
@@ -67,7 +67,7 @@ class TestUserManagerJWT:
     async def test_is_authorized_current_user_should_raise_401_if_decode_error(
         self, token_verifier_decode_error, bearer, oauth, request_obj
     ):
-        user_manager = UserManagerJWT(token_verifier_decode_error, bearer, oauth)
+        user_manager = UserAuthorizerJWT(token_verifier_decode_error, bearer, oauth)
         with pytest.raises(HTTPException) as excinfo:
             _ = await user_manager.is_authorized_current_user(request_obj)
             assert excinfo.status_code == 401

@@ -8,9 +8,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from in_concert.dependencies.auth.authorization import JwkTokenVerifier
 
 
-class UserManager(ABC):
+class UserAuthorizer(ABC):
     """
-    Manage the current user.
+    Manage the authorization of the current user.
     """
 
     @abstractmethod
@@ -25,9 +25,9 @@ class UserManager(ABC):
         pass
 
 
-class UserManagerJWT(UserManager):
+class UserAuthorizerJWT(UserAuthorizer):
     """
-    Manage the current user based on authorization with JWT tokens in oauth2 model.
+    Manage the authorization of the current user based on authorization with JWT tokens in oauth2 model.
     """
 
     def __init__(self, token_verifier: JwkTokenVerifier, bearer: HTTPBearer, oauth: OAuth) -> None:
@@ -38,7 +38,7 @@ class UserManagerJWT(UserManager):
 
     async def is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
         """
-        Implement this method to determine if current user is authorized for specified scope.
+        Determine whether current user is authorized for specified scope.
 
         :param request: starlette request object
         :param scope: scope to grant access to
