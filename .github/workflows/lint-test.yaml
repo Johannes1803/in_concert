@@ -9,6 +9,7 @@ env:
   AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
   BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
   ISSUER: ${{ vars.ISSUER }}
+  SECRET_MIDDLEWARE: ${{ secrets.SECRET_MIDDLEWARE }}
 
 permissions: read-all
 
