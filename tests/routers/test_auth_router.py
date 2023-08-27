@@ -6,7 +6,6 @@ from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
 from in_concert.routers.auth_router import create_router
-from in_concert.settings import test_settings_auth
 
 
 class TestAuthRouter:
@@ -25,8 +24,8 @@ class TestAuthRouter:
         return oauth
 
     @pytest.fixture
-    def client(self, oauth):
-        router = create_router(test_settings_auth, oauth=oauth)
+    def client(self, oauth, settings_auth):
+        router = create_router(settings_auth, oauth=oauth)
         return TestClient(router)
 
     def test_login(self, client):

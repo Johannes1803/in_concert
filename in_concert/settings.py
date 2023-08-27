@@ -32,6 +32,3 @@ class Auth0SettingsTest(Auth0Settings):
 
 class Auth0SettingsDev(Auth0Settings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env.dev", extra="ignore")
-
-
-test_settings_auth = Auth0SettingsTest()
