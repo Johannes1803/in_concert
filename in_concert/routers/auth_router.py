@@ -18,13 +18,13 @@ def create_router(auth_settings: Auth0Settings, oauth: OAuth):
         audience=auth_settings.audience,
     )
 
-    @router.get("/login")
-    async def login(request: Request):
+    @router.get("/login", response_class=RedirectResponse)
+    async def login(request: Request) -> RedirectResponse:
         redirect_uri = request.url_for("auth")
         return await oauth.auth0.authorize_redirect(request, redirect_uri)
 
-    @router.get("/callback")
-    async def auth(request: Request):
+    @router.get("/callback", response_class=RedirectResponse)
+    async def auth(request: Request) -> RedirectResponse:
         token = await oauth.auth0.authorize_access_token(request)
 
         response = RedirectResponse(url="/")
