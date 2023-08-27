@@ -25,3 +25,7 @@ class TestApp:
     def test_get_private_route_non_logged_in_should_return_401(self, client):
         response = client.get("/private")
         assert response.status_code == 401
+
+    def test_get_private_route_logged_in_should_return_200(self, client):
+        response = client.get("/private", cookies={"access_token": f"Bearer {test_settings_auth.bearer_token}"})
+        assert response.status_code == 200
