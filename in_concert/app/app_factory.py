@@ -1,19 +1,28 @@
 from typing import Annotated
 
 import jwt
+from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI
 from jwt.jwks_client import PyJWKClient
+from starlette.middleware.sessions import SessionMiddleware
 
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
 from in_concert.dependencies.auth.user_authorization import UserAuthorizerJWT
+from in_concert.routers import auth_router
 from in_concert.settings import Auth0Settings
 
 
 def create_app(auth0_settings: Auth0Settings):
     app = FastAPI()
+
+    app.add_middleware(SessionMiddleware, secret_key="some-random-string")
+
+    oauth = OAuth()
+    authentication_router = auth_router.create_router(auth0_settings, oauth)
+    app.include_router(authentication_router)
 
     jwks_url = f"https://{auth0_settings.domain}/.well-known/jwks.json"
     jwks_client = PyJWKClient(jwks_url)
