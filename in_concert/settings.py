@@ -22,6 +22,8 @@ class Auth0Settings(BaseSettings):
     issuer: str = Field()
     grant_type: str = Field(default="client_credentials")
 
+    middleware_secret_key: str = Field(alias="secret_middleware")
+
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
 

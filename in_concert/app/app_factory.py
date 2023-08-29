@@ -18,7 +18,7 @@ from in_concert.settings import Auth0Settings
 def create_app(auth0_settings: Auth0Settings):
     app = FastAPI()
 
-    app.add_middleware(SessionMiddleware, secret_key="some-random-string")
+    app.add_middleware(SessionMiddleware, secret_key=auth0_settings.middleware_secret_key)
 
     oauth = OAuth()
     authentication_router = auth_router.create_router(auth0_settings, oauth)
