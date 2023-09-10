@@ -28,7 +28,6 @@ class Auth0Settings(BaseSettings):
 
 
 class Auth0SettingsTest(Auth0Settings):
-    bearer_token: str = Field(...)
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env.test", extra="ignore")
 
 
