@@ -56,7 +56,7 @@ class JwkTokenVerifier:
         payload = self.decoder(
             token,
             signing_key,
-            algorithms=self.settings.algorithms,
+            algorithms=self.settings.algorithms.get_secret_value(),
             audience=self.settings.audience,
             issuer=self.settings.issuer,
         )

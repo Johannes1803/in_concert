@@ -16,8 +16,8 @@ def settings_auth() -> Auth0Settings:
 def bearer_token(settings_auth) -> dict:
     conn = http.client.HTTPSConnection(settings_auth.domain)
     payload_dict: dict = {
-        "client_id": settings_auth.client_id,
-        "client_secret": settings_auth.client_secret,
+        "client_id": settings_auth.client_id.get_secret_value(),
+        "client_secret": settings_auth.client_secret.get_secret_value(),
         "audience": settings_auth.audience,
         "grant_type": settings_auth.grant_type,
     }

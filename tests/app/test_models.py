@@ -9,7 +9,7 @@ from in_concert.app.models import Base, Venue
 
 @pytest.fixture
 def db_engine(settings_auth) -> Iterator[Engine]:
-    engine = create_engine(settings_auth.db_connection_string, echo=True)
+    engine = create_engine(settings_auth.db_connection_string.get_secret_value(), echo=True)
     Base.metadata.create_all(engine)
     yield engine
     Base.metadata.drop_all(engine)
