@@ -8,7 +8,7 @@ if __name__ == "__main__":
     app = create_app(auth_settings)
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host="localhost",
         port=8001,
         log_level="debug",
     )
