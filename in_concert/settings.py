@@ -24,6 +24,8 @@ class Auth0Settings(BaseSettings):
 
     middleware_secret_key: str = Field(alias="secret_middleware")
 
+    db_connection_string: str = Field(alias="DB_CONNECTION_STRING")
+
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
 
