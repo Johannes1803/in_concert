@@ -10,6 +10,7 @@ env:
   BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
   ISSUER: ${{ vars.ISSUER }}
   SECRET_MIDDLEWARE: ${{ secrets.SECRET_MIDDLEWARE }}
+  DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
 
 permissions: read-all
 
