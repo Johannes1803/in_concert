@@ -7,7 +7,7 @@ from tests.setup import get_bearer_token
 @given("I am logged in as a user")
 def logged_in_precondition(context: Context):
     token = get_bearer_token(settings_auth=context.settings_auth)
-    context.test_client.cookie = {"access_token": f'Bearer {token["access_token"]}'}
+    context.test_client.cookies = {"access_token": f'Bearer {token["access_token"]}'}
 
 
 @given("I am not logged in as a user")
