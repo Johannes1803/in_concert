@@ -7,17 +7,17 @@ from tests.setup import get_bearer_token
 @given("I am logged in as a user")
 def logged_in_precondition(context: Context):
     token = get_bearer_token(settings_auth=context.settings_auth)
-    context.cookie = {"access_token": f'Bearer {token["access_token"]}'}
+    context.test_client.cookie = {"access_token": f'Bearer {token["access_token"]}'}
 
 
 @given("I am not logged in as a user")
 def not_logged_in_precondition(context: Context):
-    context.cookie = None
+    pass
 
 
 @when("I navigate to the private route")
 def navigate_to_private_action(context: Context):
-    response = context.test_client.get("/private", cookies=context.cookie)
+    response = context.test_client.get("/private")
     context.response = response
 
 
