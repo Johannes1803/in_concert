@@ -67,9 +67,16 @@ jobs:
           source .venv/bin/activate
           flake8
       #----------------------------------------------
-      #              run test suite
+      #              run unit test suite
       #----------------------------------------------
-      - name: Run tests
+      - name: Run unit tests
         run: |
           source .venv/bin/activate
           pytest tests/
+      #----------------------------------------------
+      #              run bdd test suite
+      #----------------------------------------------
+      - name: Run behavioral driven design (bdd) tests
+        run: |
+          source .venv/bin/activate
+          behave
