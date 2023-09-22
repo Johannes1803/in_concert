@@ -57,7 +57,7 @@ class TestHTTPBearerWithCookie:
     def test_set_token_should_set_cookie(self, response_obj):
         bearer = HTTPBearerWithCookie()
         bearer.set_token(token={"access_token": "valid_token"}, response=response_obj)
-        assert response_obj.set_cookie.called_once_with(key="access_token", value=f"Bearer valid_token", httponly=True)
+        assert response_obj.set_cookie.called_once_with(key="access_token", value="Bearer valid_token", httponly=True)
 
 
 class TestJwkTokenVerifier:

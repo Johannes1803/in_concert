@@ -1,7 +1,5 @@
-from typing import Annotated
-
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Depends, Request
+from fastapi import Request
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from fastapi.security import HTTPBearer
