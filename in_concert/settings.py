@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from definitions import PROJECT_ROOT
@@ -23,6 +23,7 @@ class Auth0Settings(BaseSettings):
     grant_type: str = Field(default="client_credentials")
 
     middleware_secret_key: str = Field(alias="secret_middleware")
+    db_connection_string: SecretStr = Field()
 
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
