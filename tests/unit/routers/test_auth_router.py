@@ -5,6 +5,7 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
+from in_concert.dependencies.auth.token_validation import HTTPBearerWithCookie
 from in_concert.routers.auth_router import create_router
 
 
@@ -24,8 +25,12 @@ class TestAuthRouter:
         return oauth
 
     @pytest.fixture
-    def client(self, oauth, settings_auth):
-        router = create_router(settings_auth, oauth=oauth)
+    def bearer(self):
+        return HTTPBearerWithCookie()
+
+    @pytest.fixture
+    def client(self, oauth, settings_auth, bearer):
+        router = create_router(settings_auth, oauth=oauth, http_bearer=bearer)
         return TestClient(router)
 
     def test_login(self, client):

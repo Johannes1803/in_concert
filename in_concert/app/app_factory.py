@@ -20,15 +20,14 @@ def create_app(auth0_settings: Auth0Settings):
 
     app.add_middleware(SessionMiddleware, secret_key=auth0_settings.middleware_secret_key)
 
+    http_bearer = HTTPBearerWithCookie()
     oauth = OAuth()
-    authentication_router = auth_router.create_router(auth0_settings, oauth)
+    authentication_router = auth_router.create_router(auth0_settings, oauth, http_bearer)
     app.include_router(authentication_router)
 
     jwks_url = f"https://{auth0_settings.domain}/.well-known/jwks.json"
     jwks_client = PyJWKClient(jwks_url)
     token_verifier = JwkTokenVerifier(settings=auth0_settings, jwks_client=jwks_client, decoder=jwt.decode)
-
-    http_bearer = HTTPBearerWithCookie()
 
     user_authorizer = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
 
