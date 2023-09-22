@@ -1,18 +1,7 @@
-from typing import Iterator
-
-import pytest
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from in_concert.app.models import Base, User
-
-
-@pytest.fixture
-def db_engine(settings_auth) -> Iterator[Engine]:
-    engine = create_engine(settings_auth.db_connection_string.get_secret_value())
-    Base.metadata.create_all(engine)
-    yield engine
-    Base.metadata.drop_all(engine)
+from in_concert.app.models import User
 
 
 def test_insert_user_should_add_user_to_db(db_engine: Engine) -> None:
