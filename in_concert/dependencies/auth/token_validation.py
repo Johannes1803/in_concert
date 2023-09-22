@@ -1,13 +1,15 @@
 from typing import Callable, Optional
 
 import jwt
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 
 class HTTPBearerWithCookie(HTTPBearer):
+    """Credential setter/getter for bearer token in cookie"""
+
     async def __call__(self, request: Request) -> Optional[HTTPAuthorizationCredentials]:
         """
         Get the credentials from cookies.
@@ -32,6 +34,9 @@ class HTTPBearerWithCookie(HTTPBearer):
             else:
                 return None
         return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
+
+    def set_token(self, token: dict, response: Response) -> None:
+        response.set_cookie(key="access_token", value=f'Bearer {token.get("access_token")}', httponly=True)
 
 
 class JwkTokenVerifier:

@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
@@ -28,6 +28,12 @@ class TestHTTPBearerWithCookie:
         request.cookies = {"acces_token": "not_bearer jwt pattern"}
         return request
 
+    @pytest.fixture
+    def response_obj(self):
+        response = Response()
+        response.set_cookie = mock.MagicMock()
+        return response
+
     @pytest.mark.asyncio
     async def test_get_token_from_cookie_should_return_token_if_set(self, request_obj):
         bearer = HTTPBearerWithCookie()
@@ -47,6 +53,11 @@ class TestHTTPBearerWithCookie:
         with pytest.raises(HTTPException) as e:
             _ = await bearer(request_obj_no_token)
             assert e.status_code == 401
+
+    def test_set_token_should_set_cookie(self, response_obj):
+        bearer = HTTPBearerWithCookie()
+        bearer.set_token(token={"access_token": "valid_token"}, response=response_obj)
+        assert response_obj.set_cookie.called_once_with(key="access_token", value=f"Bearer valid_token", httponly=True)
 
 
 class TestJwkTokenVerifier:
