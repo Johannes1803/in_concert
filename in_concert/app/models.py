@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -11,7 +11,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     sub: Mapped[str] = mapped_column(String(30))
 
-    def insert(self, session) -> int:
+    def insert(self, session: Session) -> int:
         """Inserts a user into the database and returns the user's id.
         param: engine: a SQLAlchemy engine
         return: the user's id

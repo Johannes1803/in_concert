@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+from in_concert.app.models import User
 
 
 class UserSchema(BaseModel):
-    id: int | None = None
+    # id: int | None = None
     sub: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
