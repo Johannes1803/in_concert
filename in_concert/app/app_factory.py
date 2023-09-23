@@ -4,8 +4,12 @@ import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI
 from jwt.jwks_client import PyJWKClient
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
+from in_concert.app.models import Base, User
+from in_concert.app.schemas import UserSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
@@ -15,10 +19,24 @@ from in_concert.routers import auth_router
 from in_concert.settings import Auth0Settings
 
 
-def create_app(auth0_settings: Auth0Settings):
+def get_db_session_factory(settings_auth) -> sessionmaker:
+    engine = create_engine(settings_auth.db_connection_string.get_secret_value())
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base.metadata.create_all(engine)
+    return SessionLocal
+
+
+def create_app(auth0_settings: Auth0Settings, session_factory: sessionmaker):
     app = FastAPI()
 
     app.add_middleware(SessionMiddleware, secret_key=auth0_settings.middleware_secret_key)
+
+    def get_session():
+        session = session_factory()
+        try:
+            yield session
+        finally:
+            session.close()
 
     http_bearer = HTTPBearerWithCookie()
     oauth = OAuth()
@@ -38,5 +56,14 @@ def create_app(auth0_settings: Auth0Settings):
     @app.get("/private")
     async def read_private(is_authenticated: Annotated[dict, Depends(user_authorizer.is_authenticated_current_user)]):
         return {"secret": "secret123"}
+
+    @app.post("/users", status_code=201)
+    async def create_user(
+        user_schema: UserSchema,
+        db_session: Annotated[Session, Depends(get_session)],
+    ):
+        user = User(**user_schema.model_dump())
+        user_id: int = user.insert(db_session)
+        return {"id": user_id}
 
     return app
