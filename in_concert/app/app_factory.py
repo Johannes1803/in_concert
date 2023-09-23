@@ -4,7 +4,7 @@ import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI
 from jwt.jwks_client import PyJWKClient
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 

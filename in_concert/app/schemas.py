@@ -1,7 +1,5 @@
 from pydantic import BaseModel, ConfigDict
 
-from in_concert.app.models import User
-
 
 class UserSchema(BaseModel):
     # id: int | None = None
