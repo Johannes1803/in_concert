@@ -13,7 +13,7 @@ class User(Base):
 
     def insert(self, session: Session) -> int:
         """Inserts a user into the database and returns the user's id.
-        param: engine: a SQLAlchemy engine
+        param: session: a SQLAlchemy session
         return: the user's id
         """
         with session:
