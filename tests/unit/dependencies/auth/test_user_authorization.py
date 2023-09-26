@@ -37,6 +37,12 @@ class TestUserAuthorizerJWT:
         token_verifier.verify.side_effect = jwt.DecodeError("Invalid token")
         return token_verifier
 
+    @pytest.fixture
+    def token_verifier_missing_id_key(self):
+        token_verifier = mock.MagicMock()
+        token_verifier.verify.return_value = {"not_id": "123"}
+        return token_verifier
+
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token(
         self, token_verifier, bearer, request_obj
@@ -76,3 +82,12 @@ class TestUserAuthorizerJWT:
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
         user_id = await user_authorizer.get_current_user_id(request_obj)
         assert user_id == "auth0|1234567890"
+
+    @pytest.mark.asyncio
+    async def test_get_current_user_id_should_raise_500_if_unexpeted_token_format(
+        self, token_verifier_missing_id_key, bearer, request_obj
+    ):
+        user_authorizer = UserAuthorizerJWT(token_verifier_missing_id_key, bearer)
+        with pytest.raises(HTTPException) as excinfo:
+            _ = await user_authorizer.get_current_user_id(request_obj)
+            assert excinfo.status_code == 401

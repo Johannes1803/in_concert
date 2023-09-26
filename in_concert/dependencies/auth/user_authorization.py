@@ -56,7 +56,10 @@ class UserAuthorizerJWT(UserAuthorizer):
     async def get_current_user_id(self, request: Request) -> str:
         """Get the current user's id from the payload."""
         payload = await self._get_payload(request)
-        return payload["sub"]
+        try:
+            return payload["sub"]
+        except KeyError:
+            raise HTTPException(status_code=401, detail="Invalid bearer token")
 
     async def _get_payload(self, request: Request, scope: str = "") -> dict:
         """
