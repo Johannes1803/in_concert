@@ -50,10 +50,22 @@ class UserAuthorizerJWT(UserAuthorizer):
         :param scope: scope to grant access to
         :return: true if authorized, false otherwise
         """
+        payload = await self._get_payload(request, scope)
+        return True if payload else False
+
+    async def _get_payload(self, request: Request, scope: str = "") -> dict:
+        """
+        Get payload from token.
+
+        :param request: starlette request object
+        :param scope: scope to grant access to
+        :return: payload
+        """
         http_credentials: HTTPAuthorizationCredentials = await self.bearer(request)
         token: str = http_credentials.credentials
         try:
             payload = self.token_verifier.verify(token)
         except jwt.PyJWTError as exc_info:
             raise HTTPException(status_code=401, detail=f"{exc_info}")
-        return True if payload else False
+        else:
+            return payload
