@@ -53,6 +53,11 @@ class UserAuthorizerJWT(UserAuthorizer):
         payload = await self._get_payload(request, scope)
         return True if payload else False
 
+    async def get_current_user_id(self, request: Request) -> str:
+        """Get the current user's id from the payload."""
+        payload = await self._get_payload(request)
+        return payload["sub"]
+
     async def _get_payload(self, request: Request, scope: str = "") -> dict:
         """
         Get payload from token.
