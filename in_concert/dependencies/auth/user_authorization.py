@@ -3,7 +3,7 @@ from typing import Any
 import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Session
 
 from in_concert.dependencies.auth.token_validation import JwkTokenVerifier
 
@@ -85,7 +85,7 @@ class UserOAUth2Integrator:
         self.user_model = user_model
         self.user_authorizer = user_authorizer
 
-    async def get_current_user(self, request: Request, db_session) -> Any:
+    async def get_current_user(self, request: Request, db_session: Session) -> Any:
         """Get the current user from the database.
 
         :param request: starlette request object
@@ -101,11 +101,14 @@ class UserOAUth2Integrator:
         else:
             return user_from_db
 
-    async def add_current_user(self, request, db_session) -> str:
+    async def add_current_user(self, request, db_session: Session) -> str:
         """Add the user as represented by oauth2 jwt token to the database.
 
         :param request: starlette request object
         :param db_session: sqlalchemy session
         :return: user id
         """
-        pass
+        user_id: str = self.user_authorizer.get_current_user_id(request)
+        user = self.user_model(id=user_id)
+        user_id = user.insert(db_session)
+        return user_id
