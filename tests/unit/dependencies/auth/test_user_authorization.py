@@ -128,5 +128,15 @@ class TestUserOAUth2Integrator:
     @pytest.mark.asyncio
     async def test_get_user_should_raise_key_error_if_not_in_db(self, user_authorizer, request_obj, db_session):
         user_integrator = UserOAUth2Integrator(user_authorizer, User)
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeyError):
             _ = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
+
+    @pytest.mark.asyncio
+    async def test_add_user_should_add_new_user_to_db(self, user_authorizer, request_obj, db_session):
+        user_integrator = UserOAUth2Integrator(user_authorizer, User)
+        with db_session:
+            assert db_session.get(User, "auth0|1") is None
+            _ = await user_integrator.add_current_user(request=request_obj, db_session=db_session)
+            user = db_session.get(User, "auth0|1")
+            assert user
+            assert user.id == "auth0|1"
