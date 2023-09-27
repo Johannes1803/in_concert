@@ -1,29 +1,18 @@
-from abc import ABC, abstractmethod
+from typing import Any
 
 import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import DeclarativeBase
 
 from in_concert.dependencies.auth.token_validation import JwkTokenVerifier
 
 
-class UserAuthorizer(ABC):
-    """
-    Manage the authorization of the current user.
-    """
-
-    @abstractmethod
-    async def is_authenticated_current_user(self, request: Request) -> bool:
-        """
-        Implement this method to determine if current user is authorized for specified scope.
-
-        :param request: starlette request object
-        :return: true if authorized, false otherwise
-        """
-        pass
+class Base(DeclarativeBase):
+    pass
 
 
-class UserAuthorizerJWT(UserAuthorizer):
+class UserAuthorizerJWT:
     """
     Manage the authorization of the current user based on authorization with JWT tokens in oauth2 model.
     """
@@ -77,3 +66,46 @@ class UserAuthorizerJWT(UserAuthorizer):
             raise HTTPException(status_code=401, detail=f"{exc_info}")
         else:
             return payload
+
+
+class UserOAUth2Integrator:
+    """Integrate the UserAuthorizer with the internal user model."""
+
+    def __init__(
+        self,
+        user_authorizer: UserAuthorizerJWT,
+        user_model: Base,
+    ) -> None:
+        """Init the UserOAUth2Integrator.
+
+        :param user_authorizer: integrates authorization with oauth2 model
+        :param user_model: orm class of internal sql user model
+        :param user_id_col_name: name of column identifying user in sql table
+        """
+        self.user_model = user_model
+        self.user_authorizer = user_authorizer
+
+    async def get_current_user(self, request: Request, db_session) -> Any:
+        """Get the current user from the database.
+
+        :param request: starlette request object
+        :param db_session: sqlalchemy session
+        :return: user model
+        """
+        current_user_id: str = self.user_authorizer.get_current_user_id(request)
+
+        with db_session:
+            user_from_db = db_session.get(self.user_model, current_user_id)
+        if not user_from_db:
+            raise KeyError("Current user not found in database.")
+        else:
+            return user_from_db
+
+    async def add_current_user(self, request, db_session) -> str:
+        """Add the user as represented by oauth2 jwt token to the database.
+
+        :param request: starlette request object
+        :param db_session: sqlalchemy session
+        :return: user id
+        """
+        pass
