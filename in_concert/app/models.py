@@ -8,8 +8,7 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "user_account"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    sub: Mapped[str] = mapped_column(String(30), index=True)
+    id: Mapped[str] = mapped_column(String(30), primary_key=True)
 
     def insert(self, session: Session) -> int:
         """Inserts a user into the database and returns the user's id.

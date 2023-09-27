@@ -91,3 +91,15 @@ class TestUserAuthorizerJWT:
         with pytest.raises(HTTPException) as excinfo:
             _ = await user_authorizer.get_current_user_id(request_obj)
             assert excinfo.status_code == 401
+
+
+class TestUserOAUth2Integrator:
+    @pytest.fixture
+    def user_authorizer(self):
+        user_authorizer = mock.MagicMock()
+        user_authorizer.get_current_user_id.return_value = "auth0|1"
+        return user_authorizer
+
+    @pytest.fixture
+    def user_model(self):
+        pass

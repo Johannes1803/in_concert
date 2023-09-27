@@ -31,7 +31,7 @@ class TestApp:
         assert response.status_code == 200
 
     def test_post_user_should_create_user_in_db(self, client):
-        response = client.post("/users", json={"sub": "sub_id_123"})
+        response = client.post("/users", json={"id": "sub_id_123"})
         assert response.status_code == 201
         assert response.json()
-        assert response.json()["id"] == 1
+        assert response.json()["id"] == "sub_id_123"
