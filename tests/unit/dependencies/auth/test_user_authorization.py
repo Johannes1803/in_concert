@@ -5,14 +5,15 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from in_concert.dependencies.auth.user_authorization import UserAuthorizerJWT
+from in_concert.app.models import User
+from in_concert.dependencies.auth.user_authorization import (
+    Base,
+    UserAuthorizerJWT,
+    UserOAUth2Integrator,
+)
 
 
 class TestUserAuthorizerJWT:
-    @pytest.fixture
-    def request_obj(self):
-        return mock.MagicMock()
-
     @pytest.fixture
     def bearer(self):
         async_mock = mock.AsyncMock(
@@ -95,11 +96,23 @@ class TestUserAuthorizerJWT:
 
 class TestUserOAUth2Integrator:
     @pytest.fixture
-    def user_authorizer(self):
+    def setup(self, db_session) -> Base:
+        user = User(id="auth0|1")
+        with db_session:
+            db_session.add(user)
+            db_session.commit()
+            db_session.refresh(user)
+        return user
+
+    @pytest.fixture
+    def user_authorizer(self, setup) -> UserAuthorizerJWT:
         user_authorizer = mock.MagicMock()
         user_authorizer.get_current_user_id.return_value = "auth0|1"
         return user_authorizer
 
-    @pytest.fixture
-    def user_model(self):
-        pass
+    @pytest.mark.asyncio
+    async def test_get_user_should_return_user_if_logged_in_and_in_db(self, user_authorizer, request_obj, db_session):
+        user_integrator = UserOAUth2Integrator(user_authorizer, User)
+        user = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
+        assert user
+        assert user.id == "auth0|1"

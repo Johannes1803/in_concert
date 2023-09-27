@@ -1,4 +1,5 @@
 from typing import Iterator
+from unittest import mock
 
 import pytest
 from sqlalchemy import create_engine
@@ -34,3 +35,8 @@ def db_session(db_session_factory) -> Session:
     session = db_session_factory()
     yield session
     session.close()
+
+
+@pytest.fixture
+def request_obj():
+    return mock.MagicMock()
