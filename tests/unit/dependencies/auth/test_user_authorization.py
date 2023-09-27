@@ -105,14 +105,28 @@ class TestUserOAUth2Integrator:
         return user
 
     @pytest.fixture
-    def user_authorizer(self, setup) -> UserAuthorizerJWT:
+    def user_authorizer(
+        self,
+    ) -> UserAuthorizerJWT:
         user_authorizer = mock.MagicMock()
         user_authorizer.get_current_user_id.return_value = "auth0|1"
         return user_authorizer
 
+    @pytest.fixture
+    def user_authorizer_with_db_entry(self, user_authorizer, setup) -> UserAuthorizerJWT:
+        return user_authorizer
+
     @pytest.mark.asyncio
-    async def test_get_user_should_return_user_if_logged_in_and_in_db(self, user_authorizer, request_obj, db_session):
-        user_integrator = UserOAUth2Integrator(user_authorizer, User)
+    async def test_get_user_should_return_user_if_logged_in_and_in_db(
+        self, user_authorizer_with_db_entry, request_obj, db_session
+    ):
+        user_integrator = UserOAUth2Integrator(user_authorizer_with_db_entry, User)
         user = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
         assert user
         assert user.id == "auth0|1"
+
+    @pytest.mark.asyncio
+    async def test_get_user_should_raise_key_error_if_not_in_db(self, user_authorizer, request_obj, db_session):
+        user_integrator = UserOAUth2Integrator(user_authorizer, User)
+        with pytest.raises(KeyError) as excinfo:
+            _ = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
