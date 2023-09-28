@@ -1,12 +1,13 @@
 import uvicorn
+from sqlalchemy import Engine, create_engine
 
-from in_concert.app import create_app, get_db_session_factory
+from in_concert.app import create_app
 from in_concert.settings import Auth0SettingsDev
 
 if __name__ == "__main__":
     auth_settings = Auth0SettingsDev()
-    session_factory = get_db_session_factory(auth_settings)
-    app = create_app(auth_settings, session_factory=session_factory)
+    engine: Engine = create_engine(auth_settings.db_connection_string.get_secret_value())
+    app = create_app(auth_settings, engine=engine)
     uvicorn.run(
         app,
         host="localhost",

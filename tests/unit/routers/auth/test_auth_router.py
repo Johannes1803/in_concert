@@ -33,8 +33,10 @@ class TestAuthRouter:
         return user_oauth_integrator
 
     @pytest.fixture
-    def client(self, oauth, settings_auth, user_oauth_integrator):
-        router = create_router(settings_auth, oauth=oauth, user_oauth_integrator=user_oauth_integrator)
+    def client(self, oauth, settings_auth, user_oauth_integrator, db_session_dep):
+        router = create_router(
+            settings_auth, oauth=oauth, user_oauth_integrator=user_oauth_integrator, db_session_dep=db_session_dep
+        )
         return TestClient(router)
 
     def test_login(self, client):
@@ -51,7 +53,7 @@ class TestAuthRouter:
         user_oauth_integrator.user_authorizer.set_session.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_callback_syncs_user(self, client, oauth, user_oauth_integrator):
+    async def test_callback_syncs_user(self, client, user_oauth_integrator):
         client.get("/callback", follow_redirects=False)
 
         user_oauth_integrator.sync_current_user.assert_called_once()

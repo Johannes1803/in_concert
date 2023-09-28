@@ -10,10 +10,7 @@ from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
-
-
-class Base(DeclarativeBase):
-    pass
+from in_concert.routers.auth.models import User
 
 
 class UserAuthorizerJWT:
@@ -82,7 +79,7 @@ class UserOAuth2Integrator:
     def __init__(
         self,
         user_authorizer: UserAuthorizerJWT,
-        user_model: Base,
+        user_model: User,
     ) -> None:
         """Init the UserOAUth2Integrator.
 

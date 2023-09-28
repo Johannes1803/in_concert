@@ -1,7 +1,8 @@
 from behave import fixture
 from fastapi.testclient import TestClient
 
-from in_concert.app.app_factory import create_app, get_db_session_factory
+from in_concert.app.app_factory import create_app
+from in_concert.dependencies.db_session import get_db_session_factory
 from in_concert.settings import Auth0Settings, Auth0SettingsTest
 
 

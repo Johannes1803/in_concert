@@ -7,12 +7,12 @@ from in_concert.app.app_factory import create_app
 
 class TestApp:
     @pytest.fixture
-    def client(self, settings_auth, db_session_factory):
-        app = create_app(settings_auth, db_session_factory)
+    def client(self, settings_auth, engine):
+        app = create_app(settings_auth, engine=engine)
         return TestClient(app)
 
-    def test_get_app_should_return_fast_api_app(self, settings_auth, db_session_factory):
-        app = create_app(settings_auth, db_session_factory)
+    def test_get_app_should_return_fast_api_app(self, settings_auth, engine):
+        app = create_app(settings_auth, engine=engine)
         assert app
         assert isinstance(app, FastAPI)
 

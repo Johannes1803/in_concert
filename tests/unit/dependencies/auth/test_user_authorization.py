@@ -7,7 +7,6 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.exc import IntegrityError
 
 from in_concert.dependencies.auth.user_authorization import (
-    Base,
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
@@ -97,7 +96,7 @@ class TestUserAuthorizerJWT:
 
 class TestUserOAUth2Integrator:
     @pytest.fixture
-    def setup(self, db_session) -> Base:
+    def setup(self, db_session) -> User:
         user = User(id="auth0|1")
         with db_session:
             db_session.add(user)

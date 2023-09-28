@@ -1,14 +1,14 @@
-from typing import Annotated
+from typing import Annotated, Any
 
 import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI
 from jwt.jwks_client import PyJWKClient
-from sqlalchemy import create_engine
+from sqlalchemy import engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
-from in_concert.app.schemas import UserSchema
+from in_concert.app.models import Base
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
@@ -17,42 +17,38 @@ from in_concert.dependencies.auth.user_authorization import (
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
+from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.routers.auth import auth_router
-from in_concert.routers.auth.models import Base, User
+from in_concert.routers.auth.models import User
+from in_concert.routers.auth.schemas import UserSchema
 from in_concert.settings import Auth0Settings
 
 
-def get_db_session_factory(settings_auth) -> sessionmaker:
-    engine = create_engine(settings_auth.db_connection_string.get_secret_value())
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    Base.metadata.create_all(engine)
-    return SessionLocal
-
-
-def create_app(auth0_settings: Auth0Settings, session_factory: sessionmaker):
+def create_app(auth0_settings: Auth0Settings, engine: engine):
     app = FastAPI()
 
+    # configure auth
     app.add_middleware(SessionMiddleware, secret_key=auth0_settings.middleware_secret_key)
-
-    def get_session():
-        session = session_factory()
-        try:
-            yield session
-        finally:
-            session.close()
-
     http_bearer = HTTPBearerWithCookie()
-
     jwks_url = f"https://{auth0_settings.domain}/.well-known/jwks.json"
     jwks_client = PyJWKClient(jwks_url)
     token_verifier = JwkTokenVerifier(settings=auth0_settings, jwks_client=jwks_client, decoder=jwt.decode)
 
     user_authorizer = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
     user_oauth_integrator = UserOAuth2Integrator(user_authorizer, user_model=User)
-
     oauth = OAuth()
-    authentication_router = auth_router.create_router(auth0_settings, oauth, user_oauth_integrator)
+
+    # setup db engine
+    db_session_dep = DBSessionDependency(engine)
+
+    # add auth router
+    authentication_router = auth_router.create_router(
+        auth0_settings, oauth, user_oauth_integrator, db_session_dep=db_session_dep
+    )
     app.include_router(authentication_router)
+
+    # setup internal sql dbs
+    Base.metadata.create_all(engine)
 
     @app.get("/")
     async def read_main():
@@ -65,7 +61,7 @@ def create_app(auth0_settings: Auth0Settings, session_factory: sessionmaker):
     @app.post("/users", status_code=201)
     async def create_user(
         user_schema: UserSchema,
-        db_session: Annotated[Session, Depends(get_session)],
+        db_session: Annotated[Any, Depends(db_session_dep)],
     ):
         user = User(**user_schema.model_dump())
         user_id: int = user.insert(db_session)
