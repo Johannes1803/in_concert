@@ -2,12 +2,12 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
-from fastapi.security import HTTPBearer
 
+from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.settings import Auth0Settings
 
 
-def create_router(auth_settings: Auth0Settings, oauth: OAuth, http_bearer: HTTPBearer) -> APIRouter:
+def create_router(auth_settings: Auth0Settings, oauth: OAuth, user_oauth_integrator: UserOAuth2Integrator) -> APIRouter:
     router = APIRouter()
 
     CONF_URL = f"https://{auth_settings.domain}/.well-known/openid-configuration"
@@ -31,7 +31,7 @@ def create_router(auth_settings: Auth0Settings, oauth: OAuth, http_bearer: HTTPB
         token = await oauth.auth0.authorize_access_token(request)
 
         response = RedirectResponse(url="/")
-        http_bearer.set_token(token=token, response=response)
+        user_oauth_integrator.user_authorizer.bearer.set_token(token=token, response=response)
         return response
 
     return router
