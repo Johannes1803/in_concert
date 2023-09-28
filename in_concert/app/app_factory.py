@@ -14,7 +14,10 @@ from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
-from in_concert.dependencies.auth.user_authorization import UserAuthorizerJWT
+from in_concert.dependencies.auth.user_authorization import (
+    UserAuthorizerJWT,
+    UserOAuth2Integrator,
+)
 from in_concert.routers import auth_router
 from in_concert.settings import Auth0Settings
 
@@ -39,15 +42,17 @@ def create_app(auth0_settings: Auth0Settings, session_factory: sessionmaker):
             session.close()
 
     http_bearer = HTTPBearerWithCookie()
-    oauth = OAuth()
-    authentication_router = auth_router.create_router(auth0_settings, oauth, http_bearer)
-    app.include_router(authentication_router)
 
     jwks_url = f"https://{auth0_settings.domain}/.well-known/jwks.json"
     jwks_client = PyJWKClient(jwks_url)
     token_verifier = JwkTokenVerifier(settings=auth0_settings, jwks_client=jwks_client, decoder=jwt.decode)
 
     user_authorizer = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
+    user_oauth_integrator = UserOAuth2Integrator(user_authorizer, user_model=User)
+
+    oauth = OAuth()
+    authentication_router = auth_router.create_router(auth0_settings, oauth, user_oauth_integrator)
+    app.include_router(authentication_router)
 
     @app.get("/")
     async def read_main():
