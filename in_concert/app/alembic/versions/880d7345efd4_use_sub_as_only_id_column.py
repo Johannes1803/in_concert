@@ -1,7 +1,7 @@
 """use sub as only id column
 
 Revision ID: 880d7345efd4
-Revises: 
+Revises:
 Create Date: 2023-09-27 20:15:25.781532
 
 """

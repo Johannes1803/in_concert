@@ -4,6 +4,7 @@ import jwt
 import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
+from sqlalchemy.exc import IntegrityError
 
 from in_concert.app.models import User
 from in_concert.dependencies.auth.user_authorization import (
@@ -140,3 +141,9 @@ class TestUserOAUth2Integrator:
             user = db_session.get(User, "auth0|1")
             assert user
             assert user.id == "auth0|1"
+
+    @pytest.mark.asyncio
+    async def test_add_existing_user_should_raise_error(self, user_authorizer_with_db_entry, request_obj, db_session):
+        user_integrator = UserOAUth2Integrator(user_authorizer_with_db_entry, User)
+        with pytest.raises(IntegrityError):
+            _ = await user_integrator.add_current_user(request=request_obj, db_session=db_session)
