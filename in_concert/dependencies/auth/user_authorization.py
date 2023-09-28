@@ -112,3 +112,11 @@ class UserOAUth2Integrator:
         user = self.user_model(id=user_id)
         user_id = user.insert(db_session)
         return user_id
+
+    async def sync_current_user(self, request, db_session: Session):
+        """Sync the internal user_model db with oauth2 token.
+
+        :param request: starlette request object
+        :param db_session: sqlalchemy session object
+        """
+        await self.add_current_user(request, db_session)
