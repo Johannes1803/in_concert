@@ -1,6 +1,7 @@
 from typing import Any
 
 import jwt
+import sqlalchemy
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import DeclarativeBase, Session
@@ -119,4 +120,7 @@ class UserOAUth2Integrator:
         :param request: starlette request object
         :param db_session: sqlalchemy session object
         """
-        await self.add_current_user(request, db_session)
+        try:
+            _ = await self.add_current_user(request, db_session)
+        except sqlalchemy.exc.IntegrityError:
+            pass
