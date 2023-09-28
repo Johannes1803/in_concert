@@ -1,6 +1,3 @@
-from typing import Annotated, Any
-
-from fastapi import Depends
 from sqlalchemy.orm import sessionmaker
 
 

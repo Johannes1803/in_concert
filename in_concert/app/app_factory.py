@@ -5,7 +5,6 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI
 from jwt.jwks_client import PyJWKClient
 from sqlalchemy import engine
-from sqlalchemy.orm import Session, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
 from in_concert.app.models import Base

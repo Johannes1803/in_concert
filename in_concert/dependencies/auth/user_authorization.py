@@ -4,7 +4,7 @@ import jwt
 import sqlalchemy
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import Session
 
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,

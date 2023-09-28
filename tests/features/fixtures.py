@@ -1,8 +1,8 @@
 from behave import fixture
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
 
 from in_concert.app.app_factory import create_app
-from in_concert.dependencies.db_session import get_db_session_factory
 from in_concert.settings import Auth0Settings, Auth0SettingsTest
 
 
@@ -14,14 +14,14 @@ def settings_auth(context) -> Auth0Settings:
 
 
 @fixture
-def session_factory(context):
-    context.session_factory = get_db_session_factory(context.settings_auth)
-    return context.session_factory
+def engine(context):
+    context.engine = create_engine(context.settings_auth.db_connection_string.get_secret_value())
+    return context.engine
 
 
 @fixture
 def test_client(context):
-    app = create_app(context.settings_auth, context.session_factory)
+    app = create_app(context.settings_auth, context.engine)
     test_client = TestClient(app)
     context.test_client = test_client
     return context.test_client

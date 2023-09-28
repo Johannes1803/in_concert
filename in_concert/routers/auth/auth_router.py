@@ -4,8 +4,7 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, Request
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
-from sqlalchemy import create_engine, engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
