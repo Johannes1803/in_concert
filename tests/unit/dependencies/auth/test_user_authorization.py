@@ -53,8 +53,8 @@ class TestUserAuthorizerJWT:
         is_authorized = await user_authorizer.is_authenticated_current_user(request_obj)
         assert is_authorized
 
-        assert await bearer.called_once()
-        assert token_verifier.verify.called_once_with("valid_token")
+        bearer.assert_called_once()
+        token_verifier.verify.assert_called_once_with("valid_token")
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_raise_401_if_malformatted_jwt_token(
@@ -65,7 +65,7 @@ class TestUserAuthorizerJWT:
             _ = await user_authorizer.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
 
-        assert await bearer_invalid.called_once()
+        bearer_invalid.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_raise_401_if_decode_error(
@@ -76,8 +76,8 @@ class TestUserAuthorizerJWT:
             _ = await user_authorizer.is_authenticated_current_user(request_obj)
             assert excinfo.status_code == 401
 
-        assert await bearer.called_once()
-        assert token_verifier_decode_error.verify.called_once_with("valid_token")
+        bearer.assert_called_once()
+        token_verifier_decode_error.verify.assert_called_once_with("valid_token")
 
     @pytest.mark.asyncio
     async def test_get_current_user_id_should_return_user_id_if_logged_in(self, token_verifier, bearer, request_obj):
