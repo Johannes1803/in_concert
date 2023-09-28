@@ -6,6 +6,7 @@ from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
 from in_concert.dependencies.auth.token_validation import HTTPBearerWithCookie
+from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.routers.auth_router import create_router
 
 
@@ -25,12 +26,17 @@ class TestAuthRouter:
         return oauth
 
     @pytest.fixture
-    def bearer(self):
-        return HTTPBearerWithCookie()
+    def user_oauth_integrator(self):
+        user_oauth_integrator: UserOAuth2Integrator = mock.MagicMock()
+        user_oauth_integrator.sync_current_user = mock.Mock(return_value=None)
+        user_oauth_integrator.user_authorizer = mock.MagicMock()
+        user_oauth_integrator.user_authorizer.bearer = mock.MagicMock()
+        user_oauth_integrator.user_authorizer.bearer.set_token = mock.MagicMock()
+        return user_oauth_integrator
 
     @pytest.fixture
-    def client(self, oauth, settings_auth, bearer):
-        router = create_router(settings_auth, oauth=oauth, http_bearer=bearer)
+    def client(self, oauth, settings_auth, user_oauth_integrator):
+        router = create_router(settings_auth, oauth=oauth, user_oauth_integrator=user_oauth_integrator)
         return TestClient(router)
 
     def test_login(self, client):
@@ -38,10 +44,10 @@ class TestAuthRouter:
         assert response.status_code == 302
 
     @pytest.mark.asyncio
-    async def test_callback_sets_token_as_cookie(self, client, oauth):
+    async def test_callback_sets_token_as_cookie(self, client, oauth, user_oauth_integrator):
         response = client.get("/callback", follow_redirects=False)
 
         oauth.auth0.authorize_access_token.assert_called_once()
         assert response.status_code == 307
 
-        assert response.cookies["access_token"] == '"Bearer valid_token"'
+        assert user_oauth_integrator.user_authorizer.bearer.set_token.called_once_with(response)
