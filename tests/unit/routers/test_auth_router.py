@@ -5,7 +5,6 @@ from authlib.integrations.starlette_client import OAuth
 from fastapi.responses import Response
 from fastapi.testclient import TestClient
 
-from in_concert.dependencies.auth.token_validation import HTTPBearerWithCookie
 from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.routers.auth_router import create_router
 
