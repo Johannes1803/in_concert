@@ -69,7 +69,7 @@ class UserAuthorizerJWT:
             return payload
 
 
-class UserOAUth2Integrator:
+class UserOAuth2Integrator:
     """Integrate the UserAuthorizer with the internal user model."""
 
     def __init__(
@@ -81,7 +81,6 @@ class UserOAUth2Integrator:
 
         :param user_authorizer: integrates authorization with oauth2 model
         :param user_model: orm class of internal sql user model
-        :param user_id_col_name: name of column identifying user in sql table
         """
         self.user_model = user_model
         self.user_authorizer = user_authorizer
