@@ -2,6 +2,8 @@ from sqlalchemy.orm import sessionmaker
 
 
 class DBSessionDependency:
+    """Inject a SQLAlchemy session into a FastAPI endpoint."""
+
     def __init__(self, engine):
         self.engine = engine
         self.session_factory: sessionmaker = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
