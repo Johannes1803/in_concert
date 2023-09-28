@@ -36,7 +36,13 @@ class HTTPBearerWithCookie(HTTPBearer):
         return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
 
     def set_token(self, token: dict, response: Response) -> None:
-        response.set_cookie(key="access_token", value=f'Bearer {token.get("access_token")}', httponly=True)
+        response.set_cookie(
+            key="access_token",
+            value=f'Bearer {token.get("access_token")}',
+            httponly=True,
+            samesite="strict",
+            secure=True,
+        )
 
 
 class JwkTokenVerifier:
