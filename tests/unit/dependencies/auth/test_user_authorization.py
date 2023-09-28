@@ -147,3 +147,13 @@ class TestUserOAUth2Integrator:
         user_integrator = UserOAUth2Integrator(user_authorizer_with_db_entry, User)
         with pytest.raises(IntegrityError):
             _ = await user_integrator.add_current_user(request=request_obj, db_session=db_session)
+
+    @pytest.mark.asyncio
+    async def test_sync_oauth_internal_user_should_add_new_user_to_db(self, user_authorizer, request_obj, db_session):
+        user_integrator = UserOAUth2Integrator(user_authorizer, User)
+        with db_session:
+            assert db_session.get(User, "auth0|1") is None
+            _ = await user_integrator.sync_current_user(request=request_obj, db_session=db_session)
+            user = db_session.get(User, "auth0|1")
+            assert user
+            assert user.id == "auth0|1"
