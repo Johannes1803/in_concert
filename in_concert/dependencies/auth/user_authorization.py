@@ -3,10 +3,13 @@ from typing import Any
 import jwt
 import sqlalchemy
 from fastapi import HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import DeclarativeBase, Session
 
-from in_concert.dependencies.auth.token_validation import JwkTokenVerifier
+from in_concert.dependencies.auth.token_validation import (
+    HTTPBearerWithCookie,
+    JwkTokenVerifier,
+)
 
 
 class Base(DeclarativeBase):
@@ -18,7 +21,7 @@ class UserAuthorizerJWT:
     Manage the authorization of the current user based on authorization with JWT tokens in oauth2 model.
     """
 
-    def __init__(self, token_verifier: JwkTokenVerifier, bearer: HTTPBearer) -> None:
+    def __init__(self, token_verifier: JwkTokenVerifier, bearer: HTTPBearerWithCookie) -> None:
         self.token_verifier = token_verifier
         self.bearer = bearer
         super().__init__()
@@ -67,6 +70,10 @@ class UserAuthorizerJWT:
             raise HTTPException(status_code=401, detail=f"{exc_info}")
         else:
             return payload
+
+    async def set_session(self, token: dict, request: Request) -> None:
+        """Set the current session for the current user."""
+        self.bearer.set_token(token, request)
 
 
 class UserOAuth2Integrator:
