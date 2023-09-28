@@ -6,9 +6,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
+from in_concert import routers
 from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
-from in_concert.routers import auth
 from in_concert.settings import Auth0Settings
 
 
@@ -30,7 +30,7 @@ def create_router(
         audience=auth_settings.audience,
     )
     # setup internal user db
-    auth.models.Base.metadata.create_all(db_session_dep.engine)
+    routers.auth.models.Base.metadata.create_all(db_session_dep.engine)
 
     @router.get("/login", response_class=RedirectResponse)
     async def login(request: Request) -> RedirectResponse:
