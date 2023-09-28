@@ -52,6 +52,6 @@ class TestAuthRouter:
 
     @pytest.mark.asyncio
     async def test_callback_syncs_user(self, client, oauth, user_oauth_integrator):
-        response = client.get("/callback", follow_redirects=False)
+        client.get("/callback", follow_redirects=False)
 
         user_oauth_integrator.sync_current_user.assert_called_once()
