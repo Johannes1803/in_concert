@@ -38,7 +38,7 @@ def create_router(
         return await oauth.auth0.authorize_redirect(request, redirect_uri)
 
     @router.get("/callback", response_class=RedirectResponse)
-    async def auth(
+    async def authorize(
         request: Request,
         db_session: Annotated[Session, Depends(db_session_dep)],
     ) -> RedirectResponse:
