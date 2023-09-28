@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from in_concert.app.models import User
+from in_concert.routers.auth.models import User
 
 
 def test_insert_user_should_add_user_to_db(db_session: Session) -> None:

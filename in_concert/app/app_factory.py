@@ -8,7 +8,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
-from in_concert.app.models import Base, User
 from in_concert.app.schemas import UserSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
@@ -18,7 +17,8 @@ from in_concert.dependencies.auth.user_authorization import (
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
-from in_concert.routers import auth_router
+from in_concert.routers.auth import auth_router
+from in_concert.routers.auth.models import Base, User
 from in_concert.settings import Auth0Settings
 
 

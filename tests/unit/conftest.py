@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from in_concert.app.models import Base
+from in_concert.routers.auth.models import Base
 from in_concert.settings import Auth0Settings, Auth0SettingsTest
 from tests.setup import get_bearer_token
 

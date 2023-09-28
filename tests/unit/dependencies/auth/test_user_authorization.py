@@ -6,12 +6,12 @@ from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.exc import IntegrityError
 
-from in_concert.app.models import User
 from in_concert.dependencies.auth.user_authorization import (
     Base,
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
+from in_concert.routers.auth.models import User
 
 
 class TestUserAuthorizerJWT:
