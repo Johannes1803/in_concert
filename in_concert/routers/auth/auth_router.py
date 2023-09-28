@@ -47,7 +47,7 @@ def create_router(
         response = RedirectResponse(url="/")
         user_oauth_integrator.user_authorizer.set_session(token=token, response=response)
 
-        user_oauth_integrator.sync_current_user(request=request, db_session=db_session)
+        _ = await user_oauth_integrator.sync_current_user(request=request, db_session=db_session)
         return response
 
     return router

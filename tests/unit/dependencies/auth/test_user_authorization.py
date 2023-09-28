@@ -108,8 +108,8 @@ class TestUserOAUth2Integrator:
     def user_authorizer(
         self,
     ) -> UserAuthorizerJWT:
-        user_authorizer = mock.MagicMock()
-        user_authorizer.get_current_user_id.return_value = "auth0|1"
+        user_authorizer = mock.AsyncMock()
+        user_authorizer.get_current_user_id = mock.AsyncMock(return_value="auth0|1")
         return user_authorizer
 
     @pytest.fixture

@@ -2,7 +2,7 @@ from typing import Any
 
 import jwt
 import sqlalchemy
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -68,9 +68,9 @@ class UserAuthorizerJWT:
         else:
             return payload
 
-    async def set_session(self, token: dict, request: Request) -> None:
+    def set_session(self, token: dict, response: Response) -> None:
         """Set the current session for the current user."""
-        self.bearer.set_token(token, request)
+        self.bearer.set_token(token, response)
 
 
 class UserOAuth2Integrator:
@@ -96,7 +96,7 @@ class UserOAuth2Integrator:
         :param db_session: sqlalchemy session
         :return: user model
         """
-        current_user_id: str = self.user_authorizer.get_current_user_id(request)
+        current_user_id: str = await self.user_authorizer.get_current_user_id(request)
 
         with db_session:
             user_from_db = db_session.get(self.user_model, current_user_id)
@@ -112,7 +112,7 @@ class UserOAuth2Integrator:
         :param db_session: sqlalchemy session
         :return: user id
         """
-        user_id: str = self.user_authorizer.get_current_user_id(request)
+        user_id: str = await self.user_authorizer.get_current_user_id(request)
         user = self.user_model(id=user_id)
         user_id = user.insert(db_session)
         return user_id

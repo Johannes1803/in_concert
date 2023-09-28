@@ -27,9 +27,9 @@ class TestAuthRouter:
     @pytest.fixture
     def user_oauth_integrator(self):
         user_oauth_integrator: UserOAuth2Integrator = mock.MagicMock()
-        user_oauth_integrator.sync_current_user = mock.Mock(return_value=None)
+        user_oauth_integrator.sync_current_user = mock.AsyncMock(return_value=None)
         user_oauth_integrator.user_authorizer = mock.MagicMock()
-        user_oauth_integrator.user_authorizer.set_session = mock.MagicMock(return_value=None)
+        user_oauth_integrator.user_authorizer.set_session = mock.AsyncMock(return_value="1")
         return user_oauth_integrator
 
     @pytest.fixture
