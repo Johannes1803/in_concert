@@ -20,7 +20,9 @@ class TestAuthRouter:
         oauth = OAuth()
         oauth.auth0 = mock.AsyncMock()
         oauth.auth0.authorize_redirect = mock.AsyncMock(return_value=Response(status_code=302))
-        oauth.auth0.authorize_access_token = mock.AsyncMock(return_value={"access_token": "valid_token"})
+        oauth.auth0.authorize_access_token = mock.AsyncMock(
+            return_value={"access_token": "valid_token", "token_type": "Bearer"}
+        )
         oauth.register = mock.MagicMock()
         return oauth
 
@@ -29,7 +31,7 @@ class TestAuthRouter:
         user_oauth_integrator: UserOAuth2Integrator = mock.MagicMock()
         user_oauth_integrator.sync_current_user = mock.AsyncMock(return_value=None)
         user_oauth_integrator.user_authorizer = mock.MagicMock()
-        user_oauth_integrator.user_authorizer.set_session = mock.AsyncMock(return_value="1")
+        user_oauth_integrator.user_authorizer.set_session = mock.Mock(return_value="1")
         return user_oauth_integrator
 
     @pytest.fixture
