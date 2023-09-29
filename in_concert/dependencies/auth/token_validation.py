@@ -12,7 +12,7 @@ class HTTPBearerWithCookie(HTTPBearer):
 
     async def __call__(self, request: Request) -> Optional[HTTPAuthorizationCredentials]:
         """
-        Get the credentials from cookies.
+        Get the access token from cookies.
 
         :param request: The request to get the token from
         :return: jwt bearer token
@@ -35,10 +35,15 @@ class HTTPBearerWithCookie(HTTPBearer):
                 return None
         return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
 
-    def set_token(self, token: dict, response: Response) -> None:
+    def set_token(self, token_dict: dict, response: Response) -> None:
+        """Set the access token in the cookie.
+
+        :param token: oauth2 access token
+        :param response: _description_
+        """
         response.set_cookie(
             key="access_token",
-            value=f'Bearer {token.get("access_token")}',
+            value=f'Bearer {token_dict.get("access_token")}',
             httponly=True,
             samesite="strict",
             secure=True,
@@ -53,19 +58,19 @@ class JwkTokenVerifier:
         self.jwks_client = jwks_client
         self.decoder = decoder
 
-    def verify(self, token: str) -> dict:
+    def verify(self, access_token: str) -> dict:
         """
         Verifies the token and returns the payload if successful.
 
-        param: token: The token to verify
+        param: token: The access token to verify
         return: dict: The payload if successful
         raises: jwt.exceptions.DecodeError if decoding the signing key or the token fails
         raises: jwt.exceptions.InvalidSignatureError if the signature is invalid
         raises: jwt.exceptions.ExpiredSignatureError if the token is expired
         """
-        signing_key = self.jwks_client.get_signing_key_from_jwt(token).key
+        signing_key = self.jwks_client.get_signing_key_from_jwt(access_token).key
         payload = self.decoder(
-            token,
+            access_token,
             signing_key,
             algorithms=self.settings.algorithms,
             audience=self.settings.audience,

@@ -53,7 +53,7 @@ class UserAuthorizerJWT:
 
     async def _get_payload(self, request: Request, scope: str = "") -> dict:
         """
-        Get payload from token.
+        Get payload from access token.
 
         :param request: starlette request object
         :param scope: scope to grant access to
@@ -68,9 +68,11 @@ class UserAuthorizerJWT:
         else:
             return payload
 
-    def set_session(self, token: dict, response: Response) -> None:
-        """Set the current session for the current user."""
-        self.bearer.set_token(token, response)
+    def set_session(self, token_dict: dict, response: Response) -> None:
+        """Set the current session for the current user.
+
+        :param token_dict: oauth2 access token"""
+        self.bearer.set_token(token_dict, response)
 
 
 class UserOAuth2Integrator:
@@ -126,4 +128,5 @@ class UserOAuth2Integrator:
         try:
             _ = await self.add_current_user(request, db_session)
         except sqlalchemy.exc.IntegrityError:
-            pass
+            return
+        return

@@ -42,12 +42,12 @@ def create_router(
         request: Request,
         db_session: Annotated[Session, Depends(db_session_dep)],
     ) -> RedirectResponse:
-        token = await oauth.auth0.authorize_access_token(request)
+        token_dict: dict = await oauth.auth0.authorize_access_token(request)
 
         response = RedirectResponse(url="/")
-        user_oauth_integrator.user_authorizer.set_session(token=token, response=response)
+        user_oauth_integrator.user_authorizer.set_session(token_dict=token_dict, response=response)
 
-        _ = await user_oauth_integrator.sync_current_user(request=request, db_session=db_session)
+        await user_oauth_integrator.sync_current_user(token_dict=token_dict, db_session=db_session)
         return response
 
     return router
