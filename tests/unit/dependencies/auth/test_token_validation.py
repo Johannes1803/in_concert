@@ -6,6 +6,7 @@ from fastapi import HTTPException, Response
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
+    RequestLikeTokenDict,
 )
 
 
@@ -60,6 +61,16 @@ class TestHTTPBearerWithCookie:
         response_obj.set_cookie.assert_called_once_with(
             key="access_token", value="Bearer valid_token", httponly=True, samesite="strict", secure=True
         )
+
+
+class TestRequestLikeTokenDict:
+    @pytest.fixture
+    def token_dict(self):
+        return {"access_token": "valid_token", "token_type": "Bearer", "expires_in": 8600}
+
+    def test_request_like_token_dict(self, token_dict):
+        request_like_token = RequestLikeTokenDict(token_dict=token_dict)
+        assert request_like_token.cookies.get("access_token") == "Bearer valid_token"
 
 
 class TestJwkTokenVerifier:
