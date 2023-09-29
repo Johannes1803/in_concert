@@ -4,6 +4,7 @@ import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jwt.jwks_client import PyJWKClient
 from sqlalchemy import engine
@@ -54,6 +55,9 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
 
     # setup templates
     templates = Jinja2Templates(directory=PROJECT_ROOT / "in_concert/app/templates")
+
+    # mount static files
+    app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "in_concert/app/static"), name="static")
 
     @app.get("/", response_class=HTMLResponse)
     async def read_main(request: Request):
