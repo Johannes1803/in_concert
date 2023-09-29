@@ -2,11 +2,14 @@ from typing import Annotated, Any
 
 import jwt
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from jwt.jwks_client import PyJWKClient
 from sqlalchemy import engine
 from starlette.middleware.sessions import SessionMiddleware
 
+from definitions import PROJECT_ROOT
 from in_concert.app.models import Base
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
@@ -49,9 +52,12 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
     # setup internal sql dbs
     Base.metadata.create_all(engine)
 
-    @app.get("/")
-    async def read_main():
-        return {"message": "Hello World"}
+    # setup templates
+    templates = Jinja2Templates(directory=PROJECT_ROOT / "in_concert/app/templates")
+
+    @app.get("/", response_class=HTMLResponse)
+    async def read_main(request: Request):
+        return templates.TemplateResponse("home.html", {"request": request})
 
     @app.get("/private")
     async def read_private(is_authenticated: Annotated[dict, Depends(user_authorizer.is_authenticated_current_user)]):

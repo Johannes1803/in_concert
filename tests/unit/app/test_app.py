@@ -19,7 +19,7 @@ class TestApp:
     def test_get_home_route_should_return_200(self, client):
         response = client.get("/")
         assert response.status_code == 200
-        assert response.json()
+        assert response.content
 
     def test_get_private_route_non_logged_in_should_return_401(self, client):
         response = client.get("/private")
