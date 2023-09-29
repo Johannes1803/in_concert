@@ -6,9 +6,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.status import HTTP_401_UNAUTHORIZED
 
+from in_concert.dependencies.schemas import OauthTokenSchema
+
 
 class HTTPBearerWithCookie(HTTPBearer):
-    """Credential setter/getter for bearer token in cookie"""
+    """Credential setter/getter for bearer token in cookie."""
 
     async def __call__(self, request: Request) -> Optional[HTTPAuthorizationCredentials]:
         """
@@ -48,6 +50,15 @@ class HTTPBearerWithCookie(HTTPBearer):
             samesite="strict",
             secure=True,
         )
+
+
+class RequestLikeTokenDict:
+    """Adapter class for the token dict to look like a request w.r.t the interface relevant for the bearer."""
+
+    def __init__(self, token_dict: dict):
+        self.oauth_token = OauthTokenSchema(**token_dict)
+        self.cookies: dict = {}
+        self.cookies["access_token"] = f"{self.oauth_token.token_type} {self.oauth_token.access_token}"
 
 
 class JwkTokenVerifier:

@@ -7,6 +7,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from in_concert import routers
+from in_concert.dependencies.auth.token_validation import RequestLikeTokenDict
 from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.settings import Auth0Settings
@@ -43,11 +44,12 @@ def create_router(
         db_session: Annotated[Session, Depends(db_session_dep)],
     ) -> RedirectResponse:
         token_dict: dict = await oauth.auth0.authorize_access_token(request)
+        request_like_token = RequestLikeTokenDict(token_dict=token_dict)
 
         response = RedirectResponse(url="/")
         user_oauth_integrator.user_authorizer.set_session(token_dict=token_dict, response=response)
 
-        await user_oauth_integrator.sync_current_user(token_dict=token_dict, db_session=db_session)
+        await user_oauth_integrator.sync_current_user(request=request_like_token, db_session=db_session)
         return response
 
     return router
