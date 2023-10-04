@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -13,8 +15,8 @@ class VenueSchema(BaseModel):
     state: str
     zip_code: int
     phone: int
-    website: str
-    image_link: str
-    genres: str
+    website: Optional[str]
+    image_link: Optional[str]
+    genres: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
