@@ -10,7 +10,8 @@ from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
-from in_concert.routers.auth.models import User
+
+import abc
 
 
 class UserAuthorizerJWT:
@@ -75,13 +76,23 @@ class UserAuthorizerJWT:
         self.bearer.set_token(token_dict, response)
 
 
+class UserABC(abc.ABC):
+    @abc.abstractmethod
+    def __init__(self, id: int) -> None:
+        pass
+
+    @abc.abstractmethod
+    def insert(request: Request, db_session: Session) -> int:
+        pass
+
+
 class UserOAuth2Integrator:
     """Integrate the UserAuthorizer with the internal user model."""
 
     def __init__(
         self,
         user_authorizer: UserAuthorizerJWT,
-        user_model: User,
+        user_model: UserABC,
     ) -> None:
         """Init the UserOAUth2Integrator.
 

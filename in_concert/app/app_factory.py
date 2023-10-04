@@ -22,7 +22,7 @@ from in_concert.dependencies.auth.user_authorization import (
 )
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.routers.auth import auth_router
-from in_concert.routers.auth.models import User
+from in_concert.app.models import User
 from in_concert.routers.auth.schemas import UserSchema
 from in_concert.settings import Auth0Settings
 

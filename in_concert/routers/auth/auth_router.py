@@ -30,8 +30,6 @@ def create_router(
         client_secret=auth_settings.client_secret,
         audience=auth_settings.audience,
     )
-    # setup internal user db
-    routers.auth.models.Base.metadata.create_all(db_session_dep.engine)
 
     @router.get("/login", response_class=RedirectResponse)
     async def login(request: Request) -> RedirectResponse:
