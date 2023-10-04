@@ -24,9 +24,9 @@ class Venue(Base):
     state: Mapped[str] = mapped_column(String(30))
     zip_code: Mapped[str] = mapped_column(Integer())
     phone: Mapped[int] = mapped_column(Integer())
-    website: Mapped[str] = mapped_column(String(30))
-    image_link: Mapped[str] = mapped_column(String(30))
-    genres: Mapped[str] = mapped_column(String(30))
+    website: Mapped[str] = mapped_column(String(30), nullable=True)
+    image_link: Mapped[str] = mapped_column(String(30), nullable=True)
+    genres: Mapped[str] = mapped_column(String(30), nullable=True)
 
     def __repr__(self):
         return f"<Venue {self.id} {self.name}>"
