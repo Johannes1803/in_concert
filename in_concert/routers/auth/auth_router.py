@@ -6,7 +6,6 @@ from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from in_concert import routers
 from in_concert.dependencies.auth.token_validation import RequestLikeTokenDict
 from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
