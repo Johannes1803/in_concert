@@ -1,9 +1,18 @@
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 
 class Base(DeclarativeBase):
-    pass
+    def insert(self, session: Session) -> int:
+        """Inserts a user into the database and returns the user's id.
+        param: session: a SQLAlchemy session
+        return: the user's id
+        """
+        with session:
+            session.add(self)
+            session.commit()
+            session.refresh(self)
+            return self.id
 
 
 class Venue(Base):
@@ -26,14 +35,3 @@ class Venue(Base):
 class User(Base):
     __tablename__ = "user_account"
     id: Mapped[str] = mapped_column(String(30), primary_key=True)
-
-    def insert(self, session: Session) -> int:
-        """Inserts a user into the database and returns the user's id.
-        param: session: a SQLAlchemy session
-        return: the user's id
-        """
-        with session:
-            session.add(self)
-            session.commit()
-            session.refresh(self)
-            return self.id
