@@ -53,3 +53,9 @@ class TestApp:
         assert response.status_code == 201
         assert response.json()
         assert response.json()["id"]
+
+    def test_get_venue_form_should_render_venue_form(self, client):
+        response = client.get("/venues")
+        assert response.status_code == 200
+        assert response.content
+        assert b"Name" in response.content
