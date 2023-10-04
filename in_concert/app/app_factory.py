@@ -11,7 +11,7 @@ from sqlalchemy import engine
 from starlette.middleware.sessions import SessionMiddleware
 
 from definitions import PROJECT_ROOT
-from in_concert.app.models import Base
+from in_concert.app.models import Base, User
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
@@ -22,7 +22,6 @@ from in_concert.dependencies.auth.user_authorization import (
 )
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.routers.auth import auth_router
-from in_concert.app.models import User
 from in_concert.routers.auth.schemas import UserSchema
 from in_concert.settings import Auth0Settings
 
@@ -75,5 +74,9 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         user = User(**user_schema.model_dump())
         user_id: int = user.insert(db_session)
         return {"id": user_id}
+
+    @app.post("/venues", status_code=201)
+    async def create_venue():
+        pass
 
     return app

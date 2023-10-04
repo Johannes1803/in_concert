@@ -35,3 +35,21 @@ class TestApp:
         assert response.status_code == 201
         assert response.json()
         assert response.json()["id"] == "sub_id_123"
+
+    def test_post_venue_should_create_venue(self, client):
+        response = client.post(
+            "/venues",
+            json={
+                "name": "venue name",
+                "address": "venue address",
+                "state": "venue state",
+                "zip_code": 12345,
+                "phone": 1234567890,
+                "website": "venue website",
+                "image_link": "venue image link",
+                "genres": "venue genres",
+            },
+        )
+        assert response.status_code == 201
+        assert response.json()
+        assert response.json()["id"]
