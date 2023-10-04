@@ -12,6 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from definitions import PROJECT_ROOT
 from in_concert.app.models import Base, User
+from in_concert.app.schemas import UserSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
@@ -22,7 +23,6 @@ from in_concert.dependencies.auth.user_authorization import (
 )
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.routers.auth import auth_router
-from in_concert.routers.auth.schemas import UserSchema
 from in_concert.settings import Auth0Settings
 
 
