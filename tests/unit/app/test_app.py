@@ -58,4 +58,4 @@ class TestApp:
         response = client.get("/venues")
         assert response.status_code == 200
         assert response.content
-        assert b"Name" in response.content
+        assert b"name" in response.content
