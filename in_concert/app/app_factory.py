@@ -3,7 +3,7 @@ from typing import Annotated, Any
 import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jwt.jwks_client import PyJWKClient
@@ -11,6 +11,7 @@ from sqlalchemy import engine
 from starlette.middleware.sessions import SessionMiddleware
 
 from definitions import PROJECT_ROOT
+from in_concert.app.forms import VenueForm
 from in_concert.app.models import Base, User
 from in_concert.app.schemas import UserSchema
 from in_concert.dependencies.auth.token_validation import (
@@ -75,8 +76,13 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         user_id: int = user.insert(db_session)
         return {"id": user_id}
 
-    @app.post("/venues", status_code=201)
-    async def create_venue():
-        pass
+    @app.route("/venues", methods=["GET", "POST"])
+    async def create_venue(request: Request):
+        form = await VenueForm.from_formdata(request)
+        if await form.validate_on_submit():
+            return PlainTextResponse("SUCCESS")
+
+        html = templates.TemplateResponse("venue_form.html", {"form": form, "request": request})
+        return html
 
     return app
