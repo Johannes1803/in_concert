@@ -1,7 +1,7 @@
 """model user under main app
 
 Revision ID: 7486fdbf7149
-Revises: 
+Revises:
 Create Date: 2023-10-04 17:59:57.369309
 
 """
