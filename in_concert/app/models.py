@@ -22,7 +22,7 @@ class Venue(Base):
     name: Mapped[str] = mapped_column(String(30))
     address: Mapped[str] = mapped_column(String(30))
     state: Mapped[str] = mapped_column(String(30))
-    zip_code: Mapped[str] = mapped_column(Integer())
+    zip_code: Mapped[int] = mapped_column(Integer())
     phone: Mapped[int] = mapped_column(Integer())
     website: Mapped[str] = mapped_column(String(30), nullable=True)
     image_link: Mapped[str] = mapped_column(String(30), nullable=True)
