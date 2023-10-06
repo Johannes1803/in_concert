@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container my-5">
+  <h1>Create a venue!</h1>
+  <div class="row">Please fill out the form below to create a venue.</div>
+  <form action="" method="post" class="needs-validation">
+    {% for field in form %}
+    <div class="form-group">
+      <div class="row">
+        <label for="{{ field.id }}" class="form-label">{{ field.label }}</label>
+        {{ field()}}
+      </div>
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}
