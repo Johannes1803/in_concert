@@ -1,11 +1,17 @@
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from in_concert.app.app_factory import create_app
+from in_concert.app.models import Venue
 
 
 class TestApp:
+    @pytest.fixture
+    def response_obj(self):
+        return Response()
+
     @pytest.fixture
     def client(self, settings_auth, engine):
         app = create_app(settings_auth, engine=engine)
@@ -30,15 +36,19 @@ class TestApp:
         response = client.get("/private")
         assert response.status_code == 200
 
-    def test_post_user_should_create_user_in_db(self, client):
+    def test_post_user_should_create_user_in_db(
+        self,
+        client,
+    ):
         response = client.post("/users", json={"id": "sub_id_123"})
         assert response.status_code == 201
         assert response.json()
         assert response.json()["id"] == "sub_id_123"
 
-    def test_post_venue_should_create_venue(self, client):
+    def test_post_venue_should_return_id_of_new_venue(self, client, response_obj: Response):
         response = client.post(
             "/venues",
+            # response=response_obj,
             json={
                 "name": "venue name",
                 "address": "venue address",
@@ -53,6 +63,27 @@ class TestApp:
         assert response.status_code == 201
         assert response.json()
         assert response.json()["id"]
+
+    def test_post_venue_should_create_venue_in_db(self, client, response_obj: Response, db_session: Session):
+        response = client.post(
+            "/venues",
+            # response=response_obj,
+            data={
+                "name": "venue name",
+                "address": "venue address",
+                "state": "venue state",
+                "zip_code": 12345,
+                "phone": 1234567890,
+                "website": "venue website",
+                "image_link": "venue image link",
+                "genres": "venue genres",
+            },
+        )
+        venue_id = response.json()["id"]
+
+        with db_session:
+            venue = db_session.get(Venue, venue_id)
+        assert venue
 
     def test_get_venue_form_should_render_venue_form(self, client):
         response = client.get("/venues")
