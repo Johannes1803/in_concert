@@ -48,8 +48,7 @@ class TestApp:
     def test_post_venue_should_return_id_of_new_venue(self, client, response_obj: Response):
         response = client.post(
             "/venues",
-            # response=response_obj,
-            json={
+            data={
                 "name": "venue name",
                 "address": "venue address",
                 "state": "venue state",
@@ -84,6 +83,25 @@ class TestApp:
         with db_session:
             venue = db_session.get(Venue, venue_id)
         assert venue
+
+    def test_post_venue_with_missing_data_should_resend_form(self, client, response_obj: Response):
+        response = client.post(
+            "/venues",
+            # missing name
+            data={
+                "address": "venue address",
+                "state": "venue state",
+                "zip_code": 12345,
+                "phone": 1234567890,
+                "website": "venue website",
+                "image_link": "venue image link",
+            },
+        )
+        assert response.status_code == 200
+
+        html_response = response.content.decode(response.charset_encoding)
+        # test previous user input is saved in form if validation fails
+        assert 'value="venue address"' in html_response
 
     def test_get_venue_form_should_render_venue_form(self, client):
         response = client.get("/venues")
