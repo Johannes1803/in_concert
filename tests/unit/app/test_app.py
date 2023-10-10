@@ -45,7 +45,8 @@ class TestApp:
         assert response.json()
         assert response.json()["id"] == "sub_id_123"
 
-    def test_post_venue_should_return_id_of_new_venue(self, client, response_obj: Response):
+    def test_post_venue_should_return_id_of_new_venue(self, client, bearer_token):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client.post(
             "/venues",
             data={
@@ -64,7 +65,8 @@ class TestApp:
         assert response.json()
         assert response.json()["id"]
 
-    def test_post_venue_should_create_venue_in_db(self, client, response_obj: Response, db_session: Session):
+    def test_post_venue_should_create_venue_in_db(self, client, db_session: Session, bearer_token):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client.post(
             "/venues",
             # response=response_obj,
@@ -86,7 +88,8 @@ class TestApp:
             venue = db_session.get(Venue, venue_id)
         assert venue
 
-    def test_post_venue_with_missing_data_should_resend_form(self, client, response_obj: Response):
+    def test_post_venue_with_missing_data_should_resend_form(self, client, bearer_token):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client.post(
             "/venues",
             # missing name
@@ -106,7 +109,8 @@ class TestApp:
         # test previous user input is saved in form if validation fails
         assert 'value="venue street"' in html_response
 
-    def test_get_venue_form_should_render_venue_form(self, client):
+    def test_get_venue_form_should_render_venue_form(self, client, bearer_token):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client.get("/venues")
         assert response.status_code == 200
         assert response.content
