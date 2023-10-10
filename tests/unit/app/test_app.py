@@ -50,7 +50,8 @@ class TestApp:
             "/venues",
             data={
                 "name": "venue name",
-                "address": "venue address",
+                "street": "venue street",
+                "city": "venue city",
                 "state": "venue state",
                 "zip_code": 12345,
                 "phone": 1234567890,
@@ -69,7 +70,8 @@ class TestApp:
             # response=response_obj,
             data={
                 "name": "venue name",
-                "address": "venue address",
+                "street": "venue street",
+                "city": "venue city",
                 "state": "venue state",
                 "zip_code": 12345,
                 "phone": 1234567890,
@@ -89,7 +91,8 @@ class TestApp:
             "/venues",
             # missing name
             data={
-                "address": "venue address",
+                "street": "venue street",
+                "city": "venue city",
                 "state": "venue state",
                 "zip_code": 12345,
                 "phone": 1234567890,
@@ -101,7 +104,7 @@ class TestApp:
 
         html_response = response.content.decode(response.charset_encoding)
         # test previous user input is saved in form if validation fails
-        assert 'value="venue address"' in html_response
+        assert 'value="venue street"' in html_response
 
     def test_get_venue_form_should_render_venue_form(self, client):
         response = client.get("/venues")

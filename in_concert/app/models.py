@@ -20,9 +20,10 @@ class Venue(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
-    address: Mapped[str] = mapped_column(String(30))
-    state: Mapped[str] = mapped_column(String(30))
+    street: Mapped[str] = mapped_column(String(30))
+    city: Mapped[str] = mapped_column(String(30))
     zip_code: Mapped[int] = mapped_column(Integer())
+    state: Mapped[str] = mapped_column(String(30))
     phone: Mapped[int] = mapped_column(Integer())
     website: Mapped[str] = mapped_column(String(30), nullable=True)
     image_link: Mapped[str] = mapped_column(String(30), nullable=True)

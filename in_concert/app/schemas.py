@@ -11,7 +11,8 @@ class UserSchema(BaseModel):
 
 class VenueSchema(BaseModel):
     name: str
-    address: str
+    street: str
+    city: str
     state: str
     zip_code: int
     phone: int
