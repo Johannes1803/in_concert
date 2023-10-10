@@ -28,7 +28,7 @@ class UserAuthorizerJWT:
         Determine whether current user is authenticated.
 
         :param request: starlette request object
-        :return: true if authenticated, false otherwise
+        :return: true if authenticated
         """
         return await self._is_authorized_current_user(request, scope="")
 
@@ -36,7 +36,7 @@ class UserAuthorizerJWT:
         """Determine whether current user is authorized for specified scope.
 
         :param request: starlette request object
-        :return: true if authorized, false otherwise
+        :return: true if authorized
         """
         return await self._is_authorized_current_user(request, scope=scope)
 
@@ -46,12 +46,23 @@ class UserAuthorizerJWT:
 
         :param request: starlette request object
         :param scope: scope to grant access to
-        :return: true if authorized, false otherwise
+        :return: true if authorized
         """
 
         payload = await self._get_payload(request)
 
-        return True if payload else False
+        if scope:
+            try:
+                granted_permissions = payload["permissions"]
+            except KeyError:
+                raise HTTPException(status_code=403, detail="Insufficient permissions")
+            else:
+                if scope not in granted_permissions:
+                    raise HTTPException(status_code=403, detail="Insufficient permissions")
+                else:
+                    return True
+        else:
+            return True
 
     async def get_current_user_id(self, request: Request) -> str:
         """Get the current user's id from the payload."""
