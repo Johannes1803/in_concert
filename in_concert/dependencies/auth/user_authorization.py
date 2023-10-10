@@ -1,3 +1,4 @@
+import abc
 from typing import Any
 
 import jwt
@@ -10,8 +11,6 @@ from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
 )
-
-import abc
 
 
 class UserAuthorizerJWT:
@@ -26,12 +25,20 @@ class UserAuthorizerJWT:
 
     async def is_authenticated_current_user(self, request: Request) -> bool:
         """
-        Determine whether current user is authenticated for specified scope.
+        Determine whether current user is authenticated.
 
         :param request: starlette request object
         :return: true if authenticated, false otherwise
         """
         return await self._is_authorized_current_user(request, scope="")
+
+    async def is_authorized_current_user(self, request: Request, scope: str) -> bool:
+        """Determine whether current user is authorized for specified scope.
+
+        :param request: starlette request object
+        :return: true if authorized, false otherwise
+        """
+        return await self._is_authorized_current_user(request, scope=scope)
 
     async def _is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
         """
@@ -41,7 +48,9 @@ class UserAuthorizerJWT:
         :param scope: scope to grant access to
         :return: true if authorized, false otherwise
         """
-        payload = await self._get_payload(request, scope)
+
+        payload = await self._get_payload(request)
+
         return True if payload else False
 
     async def get_current_user_id(self, request: Request) -> str:
@@ -52,7 +61,7 @@ class UserAuthorizerJWT:
         except KeyError:
             raise HTTPException(status_code=401, detail="Invalid bearer token")
 
-    async def _get_payload(self, request: Request, scope: str = "") -> dict:
+    async def _get_payload(self, request: Request) -> dict:
         """
         Get payload from access token.
 

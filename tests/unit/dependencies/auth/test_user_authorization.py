@@ -33,6 +33,12 @@ class TestUserAuthorizerJWT:
         return token_verifier
 
     @pytest.fixture
+    def token_verifier_create_venue_permission(self):
+        token_verifier = mock.MagicMock()
+        token_verifier.verify.return_value = {"sub": "auth0|1234567890", "permissions": ["create:venues"]}
+        return token_verifier
+
+    @pytest.fixture
     def token_verifier_decode_error(self):
         token_verifier = mock.MagicMock()
         token_verifier.verify.side_effect = jwt.DecodeError("Invalid token")
@@ -79,13 +85,35 @@ class TestUserAuthorizerJWT:
         token_verifier_decode_error.verify.assert_called_once_with("valid_token")
 
     @pytest.mark.asyncio
+    async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token_with_permission(
+        self, token_verifier_create_venue_permission, bearer, request_obj
+    ):
+        user_authorizer = UserAuthorizerJWT(token_verifier_create_venue_permission, bearer)
+        is_authorized = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
+        assert is_authorized
+
+        bearer.assert_called_once()
+        token_verifier_create_venue_permission.verify.assert_called_once_with("valid_token")
+
+    @pytest.mark.asyncio
+    async def test_is_authorized_current_user_should_return_false_if_valid_jwt_token_without_permission(
+        self, token_verifier, bearer, request_obj
+    ):
+        user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
+        is_authorized = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
+        assert not is_authorized
+
+        bearer.assert_called_once()
+        token_verifier.verify.assert_called_once_with("valid_token")
+
+    @pytest.mark.asyncio
     async def test_get_current_user_id_should_return_user_id_if_logged_in(self, token_verifier, bearer, request_obj):
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
         user_id = await user_authorizer.get_current_user_id(request_obj)
         assert user_id == "auth0|1234567890"
 
     @pytest.mark.asyncio
-    async def test_get_current_user_id_should_raise_500_if_unexpeted_token_format(
+    async def test_get_current_user_id_should_raise_401_if_unexpeted_token_format(
         self, token_verifier_missing_id_key, bearer, request_obj
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier_missing_id_key, bearer)
