@@ -50,6 +50,14 @@ class TestUserAuthorizerJWT:
         token_verifier.verify.return_value = {"not_id": "123"}
         return token_verifier
 
+    @pytest.fixture
+    def security_scopes_create_venue(self):
+        return mock.MagicMock(scopes=["create:venues"])
+
+    @pytest.fixture
+    def security_scopes_empty(self):
+        return mock.MagicMock(scopes=[])
+
     @pytest.mark.asyncio
     async def test_is_authenticated_current_user_should_return_true_if_valid_jwt_token(
         self, token_verifier, bearer, request_obj
@@ -86,10 +94,12 @@ class TestUserAuthorizerJWT:
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token_with_permission(
-        self, token_verifier_create_venue_permission, bearer, request_obj
+        self, token_verifier_create_venue_permission, bearer, request_obj, security_scopes_create_venue
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier_create_venue_permission, bearer)
-        is_authorized = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
+        is_authorized = await user_authorizer.is_authorized_current_user(
+            request_obj, scopes=security_scopes_create_venue
+        )
         assert is_authorized
 
         bearer.assert_called_once()
@@ -97,11 +107,11 @@ class TestUserAuthorizerJWT:
 
     @pytest.mark.asyncio
     async def test_is_authorized_current_user_should_raise_403_if_valid_jwt_token_without_permission(
-        self, token_verifier, bearer, request_obj
+        self, token_verifier, bearer, request_obj, security_scopes_create_venue
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
         with pytest.raises(HTTPException) as excinfo:
-            _ = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
+            _ = await user_authorizer.is_authorized_current_user(request_obj, scopes=security_scopes_create_venue)
             assert excinfo.status_code == 403
 
     @pytest.mark.asyncio

@@ -1,10 +1,10 @@
 import abc
-from typing import Any
+from typing import Any, Optional
 
 import jwt
 import sqlalchemy
 from fastapi import HTTPException, Request, Response
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, SecurityScopes
 from sqlalchemy.orm import Session
 
 from in_concert.dependencies.auth.token_validation import (
@@ -30,37 +30,39 @@ class UserAuthorizerJWT:
         :param request: starlette request object
         :return: true if authenticated
         """
-        return await self._is_authorized_current_user(request, scope="")
+        empty_security_scope: SecurityScopes = SecurityScopes()
+        return await self._is_authorized_current_user(request, scopes=empty_security_scope)
 
-    async def is_authorized_current_user(self, request: Request, scope: str) -> bool:
+    async def is_authorized_current_user(self, request: Request, scopes: SecurityScopes) -> bool:
         """Determine whether current user is authorized for specified scope.
 
         :param request: starlette request object
+        :param scope: scopes to grant access to
         :return: true if authorized
         """
-        return await self._is_authorized_current_user(request, scope=scope)
+        return await self._is_authorized_current_user(request, scopes=scopes)
 
-    async def _is_authorized_current_user(self, request: Request, scope: str = "") -> bool:
+    async def _is_authorized_current_user(self, request: Request, scopes: SecurityScopes) -> bool:
         """
         Determine whether current user is authorized for specified scope.
 
         :param request: starlette request object
-        :param scope: scope to grant access to
+        :param scopes: scopes to grant access to
         :return: true if authorized
         """
 
         payload = await self._get_payload(request)
 
-        if scope:
+        if scopes.scopes:
             try:
                 granted_permissions = payload["permissions"]
             except KeyError:
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
             else:
-                if scope not in granted_permissions:
-                    raise HTTPException(status_code=403, detail="Insufficient permissions")
-                else:
-                    return True
+                for scope in scopes.scopes:
+                    if scope not in granted_permissions:
+                        raise HTTPException(status_code=403, detail="Insufficient permissions")
+                return True
         else:
             return True
 
