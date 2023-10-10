@@ -6,11 +6,11 @@ from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.exc import IntegrityError
 
+from in_concert.app.models import User
 from in_concert.dependencies.auth.user_authorization import (
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
-from in_concert.app.models import User
 
 
 class TestUserAuthorizerJWT:
@@ -45,7 +45,7 @@ class TestUserAuthorizerJWT:
         return token_verifier
 
     @pytest.mark.asyncio
-    async def test_is_authorized_current_user_should_return_true_if_valid_jwt_token(
+    async def test_is_authenticated_current_user_should_return_true_if_valid_jwt_token(
         self, token_verifier, bearer, request_obj
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
@@ -56,7 +56,7 @@ class TestUserAuthorizerJWT:
         token_verifier.verify.assert_called_once_with("valid_token")
 
     @pytest.mark.asyncio
-    async def test_is_authorized_current_user_should_raise_401_if_malformatted_jwt_token(
+    async def test_is_authenticated_current_user_should_raise_401_if_malformatted_jwt_token(
         self, token_verifier, bearer_invalid, request_obj
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer_invalid)
@@ -67,7 +67,7 @@ class TestUserAuthorizerJWT:
         bearer_invalid.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_is_authorized_current_user_should_raise_401_if_decode_error(
+    async def test_is_authenticated_current_user_should_raise_401_if_decode_error(
         self, token_verifier_decode_error, bearer, request_obj
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier_decode_error, bearer)
