@@ -2,7 +2,7 @@ from typing import Annotated, Any
 
 import jwt
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI, Request, Response, Security
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -65,7 +65,7 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         return templates.TemplateResponse("home.html", {"request": request})
 
     @app.get("/private")
-    async def read_private(is_authenticated: Annotated[dict, Depends(user_authorizer.is_authenticated_current_user)]):
+    async def read_private(is_authenticated: Annotated[bool, Security(user_authorizer.is_authenticated_current_user)]):
         return {"secret": "secret123"}
 
     @app.post("/users", status_code=201)
