@@ -96,15 +96,13 @@ class TestUserAuthorizerJWT:
         token_verifier_create_venue_permission.verify.assert_called_once_with("valid_token")
 
     @pytest.mark.asyncio
-    async def test_is_authorized_current_user_should_return_false_if_valid_jwt_token_without_permission(
+    async def test_is_authorized_current_user_should_raise_403_if_valid_jwt_token_without_permission(
         self, token_verifier, bearer, request_obj
     ):
         user_authorizer = UserAuthorizerJWT(token_verifier, bearer)
-        is_authorized = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
-        assert not is_authorized
-
-        bearer.assert_called_once()
-        token_verifier.verify.assert_called_once_with("valid_token")
+        with pytest.raises(HTTPException) as excinfo:
+            _ = await user_authorizer.is_authorized_current_user(request_obj, scope="create:venues")
+            assert excinfo.status_code == 403
 
     @pytest.mark.asyncio
     async def test_get_current_user_id_should_return_user_id_if_logged_in(self, token_verifier, bearer, request_obj):
