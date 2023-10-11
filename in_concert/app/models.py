@@ -1,5 +1,7 @@
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from typing import List
+
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -27,6 +29,7 @@ class Venue(Base):
     website: Mapped[str] = mapped_column(String(30), nullable=True)
     image_link: Mapped[str] = mapped_column(String(30), nullable=True)
     genres: Mapped[str] = mapped_column(String(30), nullable=True)
+    manager_id: Mapped[int] = mapped_column(ForeignKey("venue_managers.id"))
 
     def __repr__(self):
         return f"<Venue {self.id} {self.name}>"
@@ -35,6 +38,12 @@ class Venue(Base):
 class User(Base):
     __tablename__ = "user_account"
     id: Mapped[str] = mapped_column(String(30), primary_key=True)
+
+
+class VenueManager(User):
+    __tablename__ = "venue_managers"
+
+    venues: Mapped[List[Venue]] = relationship()
 
 
 def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
