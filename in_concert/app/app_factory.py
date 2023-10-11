@@ -96,4 +96,14 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         html = templates.TemplateResponse("venue_form.html", {"form": venue_form, "request": request})
         return html
 
+    @app.delete("/venues/{venue_id:int}")
+    def delete_venue(
+        venue_id: int,
+        db_session: Annotated[Any, Depends(db_session_dep)],
+    ):
+        venue = db_session.get(Venue, venue_id)
+        db_session.delete(venue)
+        db_session.commit()
+        return {"id": venue_id}
+
     return app

@@ -17,6 +17,24 @@ class TestApp:
         app = create_app(settings_auth, engine=engine)
         return TestClient(app)
 
+    @pytest.fixture
+    def existing_venue_id(self, db_session: Session):
+        with db_session:
+            venue = Venue(
+                name="venue name",
+                street="venue street",
+                city="venue city",
+                state="venue state",
+                zip_code=12345,
+                phone=1234567890,
+                website="venue website",
+                image_link="venue image link",
+                genres="venue genres",
+            )
+            db_session.add(venue)
+            db_session.commit()
+            return venue.id
+
     def test_create_app_should_return_fast_api_app(self, settings_auth, engine):
         app = create_app(settings_auth, engine=engine)
         assert app
@@ -115,3 +133,18 @@ class TestApp:
         assert response.status_code == 200
         assert response.content
         assert b"name" in response.content
+
+    def test_delete_venue_should_delete_venue_in_db(
+        self, client, existing_venue_id: int, db_session: Session, bearer_token
+    ):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
+        with db_session:
+            venue = db_session.get(Venue, existing_venue_id)
+        assert venue
+
+        response = client.delete(f"/venues/{existing_venue_id}")
+        assert response.status_code == 200
+
+        with db_session:
+            venue = db_session.get(Venue, existing_venue_id)
+        assert not venue
