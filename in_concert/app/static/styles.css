@@ -5,3 +5,7 @@ h1 {
 .form-error {
   color: red;
 }
+
+.button-wrapper .btn {
+  margin-top: 5px;
+}
