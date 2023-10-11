@@ -81,7 +81,9 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
 
     @app.api_route("/venues", methods=["GET", "POST"])
     async def create_venue(
-        is_authorized: Annotated[bool, Security(user_authorizer.is_authorized_current_user, scopes=("create:venues",))],
+        is_authorized: Annotated[
+            bool, Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",))
+        ],
         db_session: Annotated[Any, Depends(db_session_dep)],
         request: Request,
         response: Response,
