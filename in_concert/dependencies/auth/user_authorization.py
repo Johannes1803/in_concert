@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Optional
+from typing import Any
 
 import jwt
 import sqlalchemy
