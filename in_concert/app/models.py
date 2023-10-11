@@ -4,14 +4,13 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 class Base(DeclarativeBase):
     def insert(self, session: Session) -> int:
-        """Inserts a user into the database and returns the user's id.
+        """Inserts an entry into the database and returns the entry's id.
         param: session: a SQLAlchemy session
-        return: the user's id
+        return: the entry's id
         """
         with session:
-            session.add(self)
-            session.commit()
-            session.refresh(self)
+            with session.begin():
+                session.add(self)
             return self.id
 
 
@@ -36,3 +35,23 @@ class Venue(Base):
 class User(Base):
     __tablename__ = "user_account"
     id: Mapped[str] = mapped_column(String(30), primary_key=True)
+
+
+def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
+    """Delete an entry from the database.
+
+    :param session: alchemy orm session
+    :param id: id of the entry to delete
+    :param model_class: table to delete
+    :raises KeyError: if the entry does not exist in the database
+    :return: the id of the deleted entry
+    """
+    with session, session.begin():
+        db_entry = session.get(model_class, id)
+        if not db_entry:
+            raise KeyError(f"No {model_class.__name__} with id {id} exists in the database.")
+        else:
+            db_entry_id = db_entry.id
+            session.delete(db_entry)
+
+    return db_entry_id
