@@ -148,3 +148,8 @@ class TestApp:
         with db_session:
             venue = db_session.get(Venue, existing_venue_id)
         assert not venue
+
+    def test_delete_venue_should_return_404_if_venue_not_found(self, client, bearer_token):
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
+        response = client.delete("/venues/123")
+        assert response.status_code == 404

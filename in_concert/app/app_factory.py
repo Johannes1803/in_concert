@@ -2,18 +2,19 @@ from typing import Annotated, Any
 
 import jwt
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Depends, FastAPI, Request, Response, Security
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, Security
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jwt.jwks_client import PyJWKClient
 from sqlalchemy import engine
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.status import HTTP_404_NOT_FOUND
 from starlette_wtf import StarletteForm
 
 from definitions import PROJECT_ROOT
 from in_concert.app.forms import VenueForm
-from in_concert.app.models import Base, User, Venue
+from in_concert.app.models import Base, User, Venue, delete_db_entry
 from in_concert.app.schemas import UserSchema, VenueSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
@@ -101,9 +102,10 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         venue_id: int,
         db_session: Annotated[Any, Depends(db_session_dep)],
     ):
-        venue = db_session.get(Venue, venue_id)
-        db_session.delete(venue)
-        db_session.commit()
+        try:
+            venue_id = delete_db_entry(db_session, venue_id, Venue)
+        except KeyError as e:
+            raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
         return {"id": venue_id}
 
     return app
