@@ -1,12 +1,16 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserSchema(BaseModel):
     id: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class VenueManagerSchema(UserSchema):
+    venues: Optional[list[int]] = Field(default_factory=list)
 
 
 class VenueSchema(BaseModel):
@@ -19,5 +23,6 @@ class VenueSchema(BaseModel):
     website: Optional[str]
     image_link: Optional[str]
     genres: Optional[str]
+    manager_id: int
 
     model_config = ConfigDict(from_attributes=True)
