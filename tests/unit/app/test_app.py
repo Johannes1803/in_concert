@@ -72,7 +72,6 @@ class TestApp:
         assert response.status_code == 201
         assert response.json()
         assert response.json()["id"] == "sub_id_123"
-        assert len(response.json()["venues"]) == 0
 
     def test_post_venue_should_return_id_of_new_venue(self, client, bearer_token):
         client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
@@ -88,7 +87,6 @@ class TestApp:
                 "website": "venue website",
                 "image_link": "venue image link",
                 "genres": "venue genres",
-                "manager_id": 1,
             },
         )
         assert response.status_code == 201
@@ -110,7 +108,6 @@ class TestApp:
                 "website": "venue website",
                 "image_link": "venue image link",
                 "genres": "venue genres",
-                "manager_id": 1,
             },
         )
         venue_id = response.json()["id"]
@@ -132,7 +129,6 @@ class TestApp:
                 "phone": 1234567890,
                 "website": "venue website",
                 "image_link": "venue image link",
-                "manager_id": 1,
             },
         )
         assert response.status_code == 200
