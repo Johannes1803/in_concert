@@ -30,6 +30,7 @@ class Venue(Base):
     image_link: Mapped[str] = mapped_column(String(30), nullable=True)
     genres: Mapped[str] = mapped_column(String(30), nullable=True)
     manager_id: Mapped[int] = mapped_column(ForeignKey("venue_managers.id"))
+    manager: Mapped["VenueManager"] = relationship(back_populates="venues")
 
     def __repr__(self):
         return f"<Venue {self.id} {self.name}>"
@@ -43,7 +44,8 @@ class User(Base):
 class VenueManager(User):
     __tablename__ = "venue_managers"
 
-    venues: Mapped[List[Venue]] = relationship()
+    id: Mapped[int] = mapped_column(ForeignKey("user_account.id"), primary_key=True)
+    venues: Mapped[List[Venue]] = relationship(back_populates="manager")
 
 
 def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
