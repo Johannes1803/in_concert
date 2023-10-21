@@ -65,8 +65,13 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
     async def read_main(request: Request):
         return templates.TemplateResponse("home.html", {"request": request})
 
-    @app.get("/private")
-    async def read_private(is_authenticated: Annotated[bool, Security(user_authorizer.is_authenticated_current_user)]):
+    @app.get(
+        "/private",
+        dependencies=[
+            Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",)),
+        ],
+    )
+    async def read_private():
         return {"secret": "secret123"}
 
     @app.post("/users", status_code=201)
