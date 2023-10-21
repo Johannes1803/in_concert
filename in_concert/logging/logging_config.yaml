@@ -20,11 +20,11 @@ formatters:
     datefmt: "%Y-%m-%d %H:%M:%S"
 loggers: # name of loggers
   audit: # match loggers by name (here, e.g. audit is the root logger level and audit.Car the child level logger)
-    handlers: [console,audit_file] # handlers determine where the logs are written to
+    handlers: [console, audit_file] # handlers determine where the logs are written to
     level: INFO
     propagate: False
   audit.Car:
-    handlers: [ console ]
+    handlers: [console]
     level: DEBUG
     propagate: False # set to false to avoid duplicate output from parent logger ('audit')
 root: # if the logger name matches no key under loggers, this configuration applies
