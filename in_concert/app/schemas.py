@@ -23,6 +23,6 @@ class VenueSchema(BaseModel):
     website: Optional[str]
     image_link: Optional[str]
     genres: Optional[str]
-    manager_id: int
+    manager_id: str
 
     model_config = ConfigDict(from_attributes=True)

@@ -98,12 +98,15 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
     )
     async def create_venue(
         db_session: Annotated[Any, Depends(db_session_dep)],
+        user_id: Annotated[str, Depends(user_oauth_integrator.user_authorizer.get_current_user_id)],
         request: Request,
         response: Response,
     ):
         venue_form: StarletteForm = await VenueForm.from_formdata(request)
         if await venue_form.validate_on_submit():
-            venue_schema = VenueSchema(**venue_form.data)
+            venue_form_dict = venue_form.data.copy()
+            venue_form_dict["manager_id"] = user_id
+            venue_schema = VenueSchema(**venue_form_dict)
             venue = Venue(**venue_schema.model_dump())
             venue_id: int = venue.insert(db_session)
             response.status_code = 201
@@ -112,7 +115,9 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         html = templates.TemplateResponse("venue_form.html", {"form": venue_form, "request": request})
         return html
 
-    @app.delete("/venues/{venue_id:int}")
+    @app.delete(
+        "/venues/{venue_id:int}",
+    )
     def delete_venue(
         venue_id: int,
         db_session: Annotated[Any, Depends(db_session_dep)],
