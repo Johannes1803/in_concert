@@ -117,6 +117,9 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
 
     @app.delete(
         "/venues/{venue_id:int}",
+        dependencies=[
+            Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("delete:venues",)),
+        ],
     )
     def delete_venue(
         venue_id: int,
