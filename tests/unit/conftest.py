@@ -2,11 +2,14 @@ from typing import Iterator
 from unittest import mock
 
 import pytest
+from fastapi import Response
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from in_concert.dependencies.db_session import DBSessionDependency
+from in_concert.app.app_factory import create_app
 from in_concert.app.models import Base
+from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.settings import Auth0Settings, Auth0SettingsTest
 from tests.setup import get_bearer_token
 
@@ -53,3 +56,14 @@ def db_session_dep(engine) -> DBSessionDependency:
 @pytest.fixture
 def request_obj():
     return mock.MagicMock()
+
+
+@pytest.fixture
+def response_obj(self):
+    return Response()
+
+
+@pytest.fixture
+def client(settings_auth, engine):
+    app = create_app(settings_auth, engine=engine)
+    return TestClient(app)
