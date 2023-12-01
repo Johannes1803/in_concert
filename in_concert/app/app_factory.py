@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 
 import jwt
+import openfga_sdk
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, Security
 from fastapi.responses import HTMLResponse
@@ -21,26 +22,48 @@ from in_concert.dependencies.auth.token_validation import (
     JwkTokenVerifier,
 )
 from in_concert.dependencies.auth.user_authorization import (
+    UserAuthorizerFGA,
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.routers.auth import auth_router
-from in_concert.settings import Auth0Settings
+from in_concert.settings import AppSettings
 
 
-def create_app(auth0_settings: Auth0Settings, engine: engine):
+def create_app(app_settings: AppSettings, engine: engine):
     app = FastAPI()
 
-    # configure auth
-    app.add_middleware(SessionMiddleware, secret_key=auth0_settings.middleware_secret_key)
+    # configure jwt auth
+    app.add_middleware(SessionMiddleware, secret_key=app_settings.middleware_secret_key)
     http_bearer = HTTPBearerWithCookie()
-    jwks_url = f"https://{auth0_settings.domain}/.well-known/jwks.json"
+    jwks_url = f"https://{app_settings.domain}/.well-known/jwks.json"
     jwks_client = PyJWKClient(jwks_url)
-    token_verifier = JwkTokenVerifier(settings=auth0_settings, jwks_client=jwks_client, decoder=jwt.decode)
+    token_verifier = JwkTokenVerifier(settings=app_settings, jwks_client=jwks_client, decoder=jwt.decode)
+    user_authorizer_jwt = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
 
-    user_authorizer = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
-    user_oauth_integrator = UserOAuth2Integrator(user_authorizer, user_model=User)
+    # configure fga auth
+    credentials = openfga_sdk.credentials.Credentials(
+        method="client_credentials",
+        configuration=openfga_sdk.credentials.CredentialConfiguration(
+            api_issuer=app_settings.fga_api_token_issuer,
+            api_audience=app_settings.fga_api_audience,
+            client_id=app_settings.fga_client_id,
+            client_secret=app_settings.fga_client_secret,
+        ),
+    )
+    fga_configuration = openfga_sdk.client.ClientConfiguration(
+        api_scheme=app_settings.fga_api_scheme,
+        api_host=app_settings.fga_api_host,
+        store_id=app_settings.fga_store_id,
+        # authorization_model_id=app_settings.fga_model_id,
+        credentials=credentials,  # Credentials are not needed if connecting to the Playground API
+    )
+    user_authorizer_fga = UserAuthorizerFGA(fga_configuration, user_authorizer_jwt)
+    # combine auth components
+    user_oauth_integrator = UserOAuth2Integrator(
+        user_authorizer_jwt, user_model=User, user_authorizer_fga=user_authorizer_fga
+    )
     oauth = OAuth()
 
     # setup db engine
@@ -48,7 +71,7 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
 
     # add auth router
     authentication_router = auth_router.create_router(
-        auth0_settings, oauth, user_oauth_integrator, db_session_dep=db_session_dep
+        app_settings, oauth, user_oauth_integrator, db_session_dep=db_session_dep
     )
     app.include_router(authentication_router)
 
@@ -121,17 +144,20 @@ def create_app(auth0_settings: Auth0Settings, engine: engine):
         return html
 
     @app.delete(
-        "/venues/{venue_id:int}",
+        "/venues/{object_id:int}",
         dependencies=[
             Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("delete:venues",)),
+            Security(
+                user_oauth_integrator.user_authorizer_fga.is_authorized_current_user, scopes=("can_delete:venue",)
+            ),
         ],
     )
     def delete_venue(
-        venue_id: int,
+        object_id: int,
         db_session: Annotated[Any, Depends(db_session_dep)],
     ):
         try:
-            venue_id = delete_db_entry(db_session, venue_id, Venue)
+            venue_id = delete_db_entry(db_session, object_id, Venue)
         except KeyError as e:
             raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
         return {"id": venue_id}

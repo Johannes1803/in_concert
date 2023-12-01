@@ -2,9 +2,11 @@ import abc
 from typing import Any
 
 import jwt
+import openfga_sdk
 import sqlalchemy
 from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, SecurityScopes
+from openfga_sdk.client import ClientCheckRequest, OpenFgaClient
 from sqlalchemy.orm import Session
 
 from in_concert.dependencies.auth.token_validation import (
@@ -98,6 +100,53 @@ class UserAuthorizerJWT:
         self.bearer.set_token(token_dict, response)
 
 
+class UserAuthorizerFGA:
+    """
+    Manage the authorization of the current user based on FGA authorization model.
+    """
+
+    def __init__(
+        self, fga_configuration: openfga_sdk.ClientConfiguration, user_authorizer_jwt: UserAuthorizerJWT
+    ) -> None:
+        self.fga_configuration = fga_configuration
+        self.user_authorizer_jwt = user_authorizer_jwt
+
+    async def is_authorized_current_user(self, request: Request, scopes: SecurityScopes, object_id: int) -> bool:
+        """Determine whether current user is authorized for fga scope.
+
+        :param request: starlette request object
+        :param scope: scope to grant access to
+        :return: true if authorized
+        """
+        response = await self.check_is_authorized_current_user(request, scopes, object_id)
+        if not response.allowed:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        return True
+
+    async def check_is_authorized_current_user(
+        self, request: Request, scopes: SecurityScopes, object_id: int
+    ) -> Response:
+        user_id: str = await self.user_authorizer_jwt.get_current_user_id(request)
+        user_str: str = f"user:{user_id}"
+
+        relation_object_type: list = scopes.scopes[0].split(":")
+        relation = relation_object_type[0]
+        object_type = relation_object_type[1]
+        object_str = f"{object_type}:{object_id}"
+
+        options = {"store_id": self.fga_configuration.store_id}
+        body = ClientCheckRequest(
+            user=user_str,
+            relation=relation,
+            object=object_str,
+        )
+        async with OpenFgaClient(self.fga_configuration) as fga_client:
+            # Enter a context with an instance of the OpenFgaClient
+            response = await fga_client.check(body, options)
+            await fga_client.close()
+        return response
+
+
 class UserABC(abc.ABC):
     @abc.abstractmethod
     def __init__(self, id: int) -> None:
@@ -115,6 +164,7 @@ class UserOAuth2Integrator:
         self,
         user_authorizer: UserAuthorizerJWT,
         user_model: UserABC,
+        user_authorizer_fga: UserAuthorizerFGA,
     ) -> None:
         """Init the UserOAUth2Integrator.
 
@@ -123,6 +173,7 @@ class UserOAuth2Integrator:
         """
         self.user_model = user_model
         self.user_authorizer = user_authorizer
+        self.user_authorizer_fga = user_authorizer_fga
 
     async def get_current_user(self, request: Request, db_session: Session) -> Any:
         """Get the current user from the database.
