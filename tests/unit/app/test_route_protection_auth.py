@@ -6,6 +6,18 @@ from in_concert.app.models import Venue
 
 
 class TestApp:
+    """Test all possible cases of route protection.
+
+    classic RBAC:
+    - non-logged in user => 401
+    - logged in user with insufficient scope => 403
+    - logged in user with sufficient scope => 200/201
+
+    fine-grained access control:
+    - logged in user with insufficient fine-grained access control permissions => 403
+    - logged in user with sufficient fine-grained access control permissions => 200/201
+    """
+
     @pytest.fixture
     def existing_venue_id(self, db_session: Session):
         with db_session:

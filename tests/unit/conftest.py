@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from in_concert.app.app_factory import AppFactory
 from in_concert.app.models import Base
-from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.settings import AppSettings, AppSettingsTest
 from tests.setup import get_bearer_token
@@ -74,6 +73,7 @@ def client(app_settings_test, engine):
 
 @pytest.fixture
 def client_no_auth_checks(app_settings_test, engine):
+    """A test client where all security dependencies are overridden."""
     app_factory = AppFactory()
     app_factory.configure(app_settings_test)
     app_factory.user_oauth_integrator.user_authorizer_fga.add_permissions = mock.AsyncMock(return_value=True)

@@ -7,6 +7,11 @@ from in_concert.app.models import Venue
 
 
 class TestApp:
+    """Test all routes.
+
+    Route protection is tested in test_route_protection_auth.py. Here, we test the routes themselves.
+    """
+
     @pytest.fixture
     def existing_venue_id(self, db_session: Session):
         with db_session:
