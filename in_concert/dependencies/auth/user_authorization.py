@@ -6,7 +6,12 @@ import openfga_sdk
 import sqlalchemy
 from fastapi import HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, SecurityScopes
-from openfga_sdk.client import ClientCheckRequest, OpenFgaClient
+from openfga_sdk.client.client import OpenFgaClient
+from openfga_sdk.client.models import (
+    ClientCheckRequest,
+    ClientTuple,
+    ClientWriteRequest,
+)
 from sqlalchemy.orm import Session
 
 from in_concert.dependencies.auth.token_validation import (
@@ -145,6 +150,35 @@ class UserAuthorizerFGA:
             response = await fga_client.check(body, options)
             await fga_client.close()
         return response
+
+    async def add_permissions(self, request: Request, relations: list[str], object_type: str, object_id: int) -> None:
+        """Add permissions for a user to an object.
+
+        :param relation: relation of user to object
+        :param object_type: type of object
+        :param object_id: id of object
+        :param permissions: permissions to add to object
+        """
+        user_id: str = await self.user_authorizer_jwt.get_current_user_id(request)
+        user_str: str = f"user:{user_id}"
+        object_str = f"{object_type}:{object_id}"
+
+        options = {"store_id": self.fga_configuration.store_id}
+        for relation in relations:
+            body = ClientWriteRequest(
+                writes=[
+                    ClientTuple(
+                        user=user_str,
+                        relation=relation,
+                        object=object_str,
+                    ),
+                ],
+            )
+            async with OpenFgaClient(self.fga_configuration) as fga_client:
+                # Enter a context with an instance of the OpenFgaClient
+                await fga_client.write(body, options)
+                await fga_client.close()
+        return
 
 
 class UserABC(abc.ABC):
