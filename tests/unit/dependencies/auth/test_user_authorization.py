@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from in_concert.app.models import User
 from in_concert.dependencies.auth.user_authorization import (
+    UserAuthorizerFGA,
     UserAuthorizerJWT,
     UserOAuth2Integrator,
 )
@@ -152,24 +153,35 @@ class TestUserOAUth2Integrator:
     def user_authorizer_with_db_entry(self, user_authorizer, setup) -> UserAuthorizerJWT:
         return user_authorizer
 
+    @pytest.fixture
+    def user_authorizer_fga(
+        self,
+    ) -> UserAuthorizerFGA:
+        user_authorizer_fga = mock.AsyncMock()
+        return user_authorizer_fga
+
     @pytest.mark.asyncio
     async def test_get_user_should_return_user_if_logged_in_and_in_db(
-        self, user_authorizer_with_db_entry, request_obj, db_session
+        self, user_authorizer_with_db_entry, request_obj, db_session, user_authorizer_fga
     ):
-        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User)
+        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User, user_authorizer_fga)
         user = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
         assert user
         assert user.id == "auth0|1"
 
     @pytest.mark.asyncio
-    async def test_get_user_should_raise_key_error_if_not_in_db(self, user_authorizer, request_obj, db_session):
-        user_integrator = UserOAuth2Integrator(user_authorizer, User)
+    async def test_get_user_should_raise_key_error_if_not_in_db(
+        self, user_authorizer, request_obj, db_session, user_authorizer_fga
+    ):
+        user_integrator = UserOAuth2Integrator(user_authorizer, User, user_authorizer_fga)
         with pytest.raises(KeyError):
             _ = await user_integrator.get_current_user(request=request_obj, db_session=db_session)
 
     @pytest.mark.asyncio
-    async def test_add_user_should_add_new_user_to_db(self, user_authorizer, request_obj, db_session):
-        user_integrator = UserOAuth2Integrator(user_authorizer, User)
+    async def test_add_user_should_add_new_user_to_db(
+        self, user_authorizer, request_obj, db_session, user_authorizer_fga
+    ):
+        user_integrator = UserOAuth2Integrator(user_authorizer, User, user_authorizer_fga)
         with db_session:
             assert db_session.get(User, "auth0|1") is None
 
@@ -181,14 +193,18 @@ class TestUserOAUth2Integrator:
             assert user.id == "auth0|1"
 
     @pytest.mark.asyncio
-    async def test_add_existing_user_should_raise_error(self, user_authorizer_with_db_entry, request_obj, db_session):
-        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User)
+    async def test_add_existing_user_should_raise_error(
+        self, user_authorizer_with_db_entry, request_obj, db_session, user_authorizer_fga
+    ):
+        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User, user_authorizer_fga)
         with pytest.raises(IntegrityError):
             _ = await user_integrator.add_current_user(request=request_obj, db_session=db_session)
 
     @pytest.mark.asyncio
-    async def test_sync_current_user_should_add_new_user_to_db(self, user_authorizer, request_obj, db_session):
-        user_integrator = UserOAuth2Integrator(user_authorizer, User)
+    async def test_sync_current_user_should_add_new_user_to_db(
+        self, user_authorizer, request_obj, db_session, user_authorizer_fga
+    ):
+        user_integrator = UserOAuth2Integrator(user_authorizer, User, user_authorizer_fga)
         with db_session:
             assert db_session.get(User, "auth0|1") is None
 
@@ -201,9 +217,9 @@ class TestUserOAUth2Integrator:
 
     @pytest.mark.asyncio
     async def test_sync_current_user_should_have_no_effect_existing_user(
-        self, user_authorizer_with_db_entry, request_obj, db_session
+        self, user_authorizer_with_db_entry, request_obj, db_session, user_authorizer_fga
     ):
-        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User)
+        user_integrator = UserOAuth2Integrator(user_authorizer_with_db_entry, User, user_authorizer_fga)
         with db_session:
             assert db_session.get(User, "auth0|1")
 
