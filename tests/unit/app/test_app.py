@@ -26,8 +26,8 @@ class TestApp:
             db_session.commit()
             return venue.id
 
-    def test_create_app_should_return_fast_api_app(self, settings_auth, engine):
-        app = create_app(settings_auth, engine=engine)
+    def test_create_app_should_return_fast_api_app(self, app_settings_test, engine):
+        app = create_app(app_settings_test, engine=engine)
         assert app
         assert isinstance(app, FastAPI)
 
@@ -140,7 +140,7 @@ class TestApp:
             venue = db_session.get(Venue, existing_venue_id)
         assert not venue
 
-    def test_delete_venue_should_return_404_if_venue_not_found(self, client, bearer_token):
+    def test_delete_venue_should_return_403_if_venue_not_existing(self, client, bearer_token):
         client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client.delete("/venues/123")
-        assert response.status_code == 404
+        assert response.status_code == 403

@@ -3,12 +3,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 
 from in_concert.app.app_factory import create_app
-from in_concert.settings import Auth0Settings, Auth0SettingsTest
+from in_concert.settings import AppSettingsTest, Auth0Settings
 
 
 @fixture
 def settings_auth(context) -> Auth0Settings:
-    test_settings_auth = Auth0SettingsTest()
+    test_settings_auth = AppSettingsTest()
     context.settings_auth = test_settings_auth
     return context.settings_auth
 

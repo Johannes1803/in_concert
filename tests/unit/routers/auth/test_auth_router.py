@@ -35,9 +35,9 @@ class TestAuthRouter:
         return user_oauth_integrator
 
     @pytest.fixture
-    def client(self, oauth, settings_auth, user_oauth_integrator, db_session_dep):
+    def client(self, oauth, app_settings_test, user_oauth_integrator, db_session_dep):
         router = create_router(
-            settings_auth, oauth=oauth, user_oauth_integrator=user_oauth_integrator, db_session_dep=db_session_dep
+            app_settings_test, oauth=oauth, user_oauth_integrator=user_oauth_integrator, db_session_dep=db_session_dep
         )
         return TestClient(router)
 
