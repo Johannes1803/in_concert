@@ -7,8 +7,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from in_concert.app.app_factory import create_app
+from in_concert.app.app_factory import AppFactory
 from in_concert.app.models import Base
+from in_concert.dependencies.auth.user_authorization import UserOAuth2Integrator
 from in_concert.dependencies.db_session import DBSessionDependency
 from in_concert.settings import AppSettings, AppSettingsTest
 from tests.setup import get_bearer_token
@@ -65,5 +66,16 @@ def response_obj(self):
 
 @pytest.fixture
 def client(app_settings_test, engine):
-    app = create_app(app_settings_test, engine=engine)
+    app_factory = AppFactory()
+    app_factory.configure(app_settings_test)
+    app = app_factory.create_app(app_settings_test, engine=engine)
+    return TestClient(app)
+
+
+@pytest.fixture
+def client_no_auth_checks(app_settings_test, engine):
+    app_factory = AppFactory()
+    app_factory.configure(app_settings_test)
+    app_factory.user_oauth_integrator.user_authorizer_fga.add_permissions = mock.AsyncMock(return_value=True)
+    app = app_factory.create_app(app_settings_test, engine=engine, override_security_dependencies=True)
     return TestClient(app)

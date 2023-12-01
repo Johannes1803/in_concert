@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated, Any
 
 import jwt
@@ -31,135 +32,185 @@ from in_concert.routers.auth import auth_router
 from in_concert.settings import AppSettings
 
 
-def create_app(app_settings: AppSettings, engine: engine):
-    app = FastAPI()
+class AppFactory:
+    def __init__(self) -> None:
+        self.user_authorizer_jwt: UserAuthorizerJWT = None
+        self.user_authorizer_fga: UserAuthorizerFGA = None
+        self.user_oauth_integrator: UserOAuth2Integrator = None
+        self.app = None
 
-    # configure jwt auth
-    app.add_middleware(SessionMiddleware, secret_key=app_settings.middleware_secret_key)
-    http_bearer = HTTPBearerWithCookie()
-    jwks_url = f"https://{app_settings.domain}/.well-known/jwks.json"
-    jwks_client = PyJWKClient(jwks_url)
-    token_verifier = JwkTokenVerifier(settings=app_settings, jwks_client=jwks_client, decoder=jwt.decode)
-    user_authorizer_jwt = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
+    def configure(self, app_settings: AppSettings):
+        self.configure_user_authorizer_jwt(app_settings)
+        self.configure_user_authorizer_fga(app_settings)
+        self.configure_user_oauth_integrator()
 
-    # configure fga auth
-    credentials = openfga_sdk.credentials.Credentials(
-        method="client_credentials",
-        configuration=openfga_sdk.credentials.CredentialConfiguration(
-            api_issuer=app_settings.fga_api_token_issuer,
-            api_audience=app_settings.fga_api_audience,
-            client_id=app_settings.fga_client_id,
-            client_secret=app_settings.fga_client_secret,
-        ),
-    )
-    fga_configuration = openfga_sdk.client.ClientConfiguration(
-        api_scheme=app_settings.fga_api_scheme,
-        api_host=app_settings.fga_api_host,
-        store_id=app_settings.fga_store_id,
-        # authorization_model_id=app_settings.fga_model_id,
-        credentials=credentials,  # Credentials are not needed if connecting to the Playground API
-    )
-    user_authorizer_fga = UserAuthorizerFGA(fga_configuration, user_authorizer_jwt)
-    # combine auth components
-    user_oauth_integrator = UserOAuth2Integrator(
-        user_authorizer_jwt, user_model=User, user_authorizer_fga=user_authorizer_fga
-    )
-    oauth = OAuth()
+    def configure_user_authorizer_jwt(self, app_settings: AppSettings):
+        http_bearer = HTTPBearerWithCookie()
+        jwks_url = f"https://{app_settings.domain}/.well-known/jwks.json"
+        jwks_client = PyJWKClient(jwks_url)
+        token_verifier = JwkTokenVerifier(settings=app_settings, jwks_client=jwks_client, decoder=jwt.decode)
+        self.user_authorizer_jwt = UserAuthorizerJWT(token_verifier=token_verifier, bearer=http_bearer)
 
-    # setup db engine
-    db_session_dep = DBSessionDependency(engine)
+    def configure_user_authorizer_fga(self, app_settings: AppSettings):
+        assert self.user_authorizer_jwt
+        # configure fga auth
+        credentials = openfga_sdk.credentials.Credentials(
+            method="client_credentials",
+            configuration=openfga_sdk.credentials.CredentialConfiguration(
+                api_issuer=app_settings.fga_api_token_issuer,
+                api_audience=app_settings.fga_api_audience,
+                client_id=app_settings.fga_client_id,
+                client_secret=app_settings.fga_client_secret,
+            ),
+        )
+        fga_configuration = openfga_sdk.client.ClientConfiguration(
+            api_scheme=app_settings.fga_api_scheme,
+            api_host=app_settings.fga_api_host,
+            store_id=app_settings.fga_store_id,
+            # authorization_model_id=app_settings.fga_model_id,
+            credentials=credentials,  # Credentials are not needed if connecting to the Playground API
+        )
+        self.user_authorizer_fga = UserAuthorizerFGA(fga_configuration, self.user_authorizer_jwt)
 
-    # add auth router
-    authentication_router = auth_router.create_router(
-        app_settings, oauth, user_oauth_integrator, db_session_dep=db_session_dep
-    )
-    app.include_router(authentication_router)
+    def configure_user_oauth_integrator(self):
+        assert self.user_authorizer_jwt
+        assert self.user_authorizer_fga
+        self.user_oauth_integrator = UserOAuth2Integrator(
+            self.user_authorizer_jwt, user_model=User, user_authorizer_fga=self.user_authorizer_fga
+        )
 
-    # setup internal sql dbs
-    Base.metadata.create_all(engine)
+    def create_app(
+        self, app_settings: AppSettings, engine: engine, override_security_dependencies: bool = False
+    ) -> FastAPI:
+        app = FastAPI()
 
-    # setup templates
-    templates = Jinja2Templates(directory=PROJECT_ROOT / "in_concert/app/templates")
+        # configure jwt auth
+        app.add_middleware(SessionMiddleware, secret_key=app_settings.middleware_secret_key)
+        oauth = OAuth()
 
-    # mount static files
-    app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "in_concert/app/static"), name="static")
+        # setup db engine
+        db_session_dep = DBSessionDependency(engine)
 
-    @app.get("/", response_class=HTMLResponse)
-    async def read_main(request: Request):
-        return templates.TemplateResponse("home.html", {"request": request})
+        # add auth router
+        authentication_router = auth_router.create_router(
+            app_settings, oauth, self.user_oauth_integrator, db_session_dep=db_session_dep
+        )
+        app.include_router(authentication_router)
 
-    @app.get(
-        "/private",
-        dependencies=[
-            Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",)),
-        ],
-    )
-    async def read_private():
-        return {"secret": "secret123"}
+        # setup internal sql dbs
+        Base.metadata.create_all(engine)
 
-    @app.post("/users", status_code=201)
-    async def create_user(
-        user_schema: UserSchema,
-        db_session: Annotated[Any, Depends(db_session_dep)],
-        request: Request,
-    ):
-        user = User(**user_schema.model_dump())
-        user_id: int = user.insert(db_session)
-        return {"id": user_id}
+        # setup templates
+        templates = Jinja2Templates(directory=PROJECT_ROOT / "in_concert/app/templates")
 
-    @app.post("/venue_managers", status_code=201)
-    async def create_venue_manager(
-        venue_manager_Schema: VenueManagerSchema,
-        db_session: Annotated[Any, Depends(db_session_dep)],
-        request: Request,
-    ):
-        venue_manager = VenueManager(**venue_manager_Schema.model_dump())
-        venue_manager_id: int = venue_manager.insert(db_session)
-        return {"id": venue_manager_id}
+        # mount static files
+        app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "in_concert/app/static"), name="static")
 
-    @app.api_route(
-        "/venues",
-        methods=["GET", "POST"],
-        dependencies=[
-            Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",)),
-        ],
-    )
-    async def create_venue(
-        db_session: Annotated[Any, Depends(db_session_dep)],
-        user_id: Annotated[str, Depends(user_oauth_integrator.user_authorizer.get_current_user_id)],
-        request: Request,
-        response: Response,
-    ):
-        venue_form: StarletteForm = await VenueForm.from_formdata(request)
-        if await venue_form.validate_on_submit():
-            venue_form_dict = venue_form.data.copy()
-            venue_form_dict["manager_id"] = user_id
-            venue_schema = VenueSchema(**venue_form_dict)
-            venue = Venue(**venue_schema.model_dump())
-            venue_id: int = venue.insert(db_session)
-            response.status_code = 201
+        @app.get("/", response_class=HTMLResponse)
+        async def read_main(request: Request):
+            return templates.TemplateResponse("home.html", {"request": request})
+
+        @app.get(
+            "/private",
+            dependencies=[
+                Security(
+                    self.user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",)
+                ),
+            ],
+        )
+        async def read_private():
+            return {"secret": "secret123"}
+
+        @app.post("/users", status_code=201)
+        async def create_user(
+            user_schema: UserSchema,
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
+        ):
+            user = User(**user_schema.model_dump())
+            user_id: int = user.insert(db_session)
+            return {"id": user_id}
+
+        @app.post("/venue_managers", status_code=201)
+        async def create_venue_manager(
+            venue_manager_Schema: VenueManagerSchema,
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
+        ):
+            venue_manager = VenueManager(**venue_manager_Schema.model_dump())
+            venue_manager_id: int = venue_manager.insert(db_session)
+            return {"id": venue_manager_id}
+
+        @app.api_route(
+            "/venues",
+            methods=["GET", "POST"],
+            dependencies=[
+                Security(
+                    self.user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:venues",)
+                ),
+            ],
+        )
+        async def create_venue(
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            user_id: Annotated[str, Depends(self.user_oauth_integrator.user_authorizer.get_current_user_id)],
+            request: Request,
+            response: Response,
+        ):
+            venue_form: StarletteForm = await VenueForm.from_formdata(request)
+            if await venue_form.validate_on_submit():
+                venue_form_dict = venue_form.data.copy()
+                venue_form_dict["manager_id"] = user_id
+                venue_schema = VenueSchema(**venue_form_dict)
+                venue = Venue(**venue_schema.model_dump())
+                venue_id: int = venue.insert(db_session)
+                response.status_code = 201
+
+                await self.user_oauth_integrator.user_authorizer_fga.add_permissions(
+                    request, ["can_delete", "can_update"], "venue", venue_id
+                )
+
+                return {"id": venue_id}
+
+            html = templates.TemplateResponse("venue_form.html", {"form": venue_form, "request": request})
+            return html
+
+        @app.delete(
+            "/venues/{object_id:int}",
+            dependencies=[
+                Security(
+                    self.user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("delete:venues",)
+                ),
+                Security(
+                    self.user_oauth_integrator.user_authorizer_fga.is_authorized_current_user,
+                    scopes=("can_delete:venue",),
+                ),
+            ],
+        )
+        def delete_venue(
+            object_id: int,
+            db_session: Annotated[Any, Depends(db_session_dep)],
+        ):
+            try:
+                venue_id = delete_db_entry(db_session, object_id, Venue)
+            except KeyError as e:
+                raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
             return {"id": venue_id}
 
-        html = templates.TemplateResponse("venue_form.html", {"form": venue_form, "request": request})
-        return html
+        if override_security_dependencies:
 
-    @app.delete(
-        "/venues/{object_id:int}",
-        dependencies=[
-            Security(user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("delete:venues",)),
-            Security(
-                user_oauth_integrator.user_authorizer_fga.is_authorized_current_user, scopes=("can_delete:venue",)
-            ),
-        ],
-    )
-    def delete_venue(
-        object_id: int,
-        db_session: Annotated[Any, Depends(db_session_dep)],
-    ):
-        try:
-            venue_id = delete_db_entry(db_session, object_id, Venue)
-        except KeyError as e:
-            raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-        return {"id": venue_id}
+            async def dummy_is_authorized_current_user():
+                return await await_true()
 
-    return app
+            async def await_true():
+                future = asyncio.Future()
+                return future
+
+            app.dependency_overrides[
+                self.user_oauth_integrator.user_authorizer.is_authorized_current_user
+            ] = dummy_is_authorized_current_user
+            app.dependency_overrides[
+                self.user_oauth_integrator.user_authorizer_fga.is_authorized_current_user
+            ] = dummy_is_authorized_current_user
+
+        self.app = app
+        return self.app

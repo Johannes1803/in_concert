@@ -1,9 +1,7 @@
 import pytest
 from fastapi import Response
-from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from in_concert.app.app_factory import create_app
 from in_concert.app.models import Venue
 
 
@@ -31,12 +29,6 @@ class TestApp:
     def response_obj(self):
         return Response()
 
-    @pytest.fixture
-    def client(self, app_settings_test, engine):
-        app = create_app(app_settings_test, engine=engine)
-
-        return TestClient(app)
-
     def test_get_private_route_non_logged_in_should_return_401(self, client):
         response = client.get("/private")
         assert response.status_code == 401
@@ -58,5 +50,5 @@ class TestApp:
             venue = db_session.get(Venue, existing_venue_id)
         assert venue
 
-        response = client.delete(f"/venues/{existing_venue_id + 1}")
+        response = client.delete(f"/venues/{existing_venue_id}")
         assert response.status_code == 403
