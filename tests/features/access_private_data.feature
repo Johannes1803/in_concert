@@ -1,6 +1,6 @@
 Feature: Access protected information
 
-  @fixture.settings_auth
+  @fixture.app_settings_test
   @fixture.engine
   @fixture.test_client
   Scenario: Access protected information as logged-in user
@@ -8,7 +8,7 @@ Feature: Access protected information
       When I navigate to the private route
       Then I get access to private data
 
-  @fixture.settings_auth
+  @fixture.app_settings_test
   @fixture.engine
   @fixture.test_client
   Scenario: Access protected information as anonymous user
