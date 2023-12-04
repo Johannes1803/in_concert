@@ -123,12 +123,12 @@ class UserAuthorizerFGA:
         :param scope: scope to grant access to
         :return: true if authorized
         """
-        response = await self.check_is_authorized_current_user(request, scopes, object_id)
+        response = await self._check_authorization_current_user(request, scopes, object_id)
         if not response.allowed:
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         return True
 
-    async def check_is_authorized_current_user(
+    async def _check_authorization_current_user(
         self, request: Request, scopes: SecurityScopes, object_id: int
     ) -> Response:
         user_id: str = await self.user_authorizer_jwt.get_current_user_id(request)
