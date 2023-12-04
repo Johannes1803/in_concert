@@ -7,6 +7,33 @@
       integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
       crossorigin="anonymous"
     />
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{{ url_for('read_main') }}">Navbar</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('read_main') }}">Events </a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('read_main') }}">Bands </a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('list_venues') }}">Venues </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
     <title>Welcome to inConcert!</title>
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
