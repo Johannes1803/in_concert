@@ -11,5 +11,5 @@ class VenueForm(StarletteForm):
     state = StringField("state", validators=[DataRequired(), Length(max=30)])
     phone = IntegerField("phone", validators=[DataRequired()])
     website = StringField("website", validators=[Length(max=30)])
-    image_link = StringField("image_link", validators=[Length(max=30)])
+    image_link = StringField("image_link", validators=[Length(max=300)])
     genres = StringField("genres", validators=[Length(max=30)])

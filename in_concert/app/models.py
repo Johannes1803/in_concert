@@ -27,7 +27,7 @@ class Venue(Base):
     state: Mapped[str] = mapped_column(String(30))
     phone: Mapped[int] = mapped_column(Integer())
     website: Mapped[str] = mapped_column(String(30), nullable=True)
-    image_link: Mapped[str] = mapped_column(String(30), nullable=True)
+    image_link: Mapped[str] = mapped_column(String(), nullable=True)
     genres: Mapped[str] = mapped_column(String(30), nullable=True)
     manager_id: Mapped[int] = mapped_column(ForeignKey("venue_managers.id"))
     manager: Mapped["VenueManager"] = relationship(back_populates="venues")

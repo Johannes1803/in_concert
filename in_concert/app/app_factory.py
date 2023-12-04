@@ -196,6 +196,15 @@ class AppFactory:
                 raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
             return {"id": venue_id}
 
+        @app.get("/list_venues")
+        def list_venues(
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
+        ):
+            venues = db_session.query(Venue).all()
+            html = templates.TemplateResponse("venues.html", {"venues": venues, "request": request})
+            return html
+
         if override_security_dependencies:
 
             async def dummy_is_authorized_current_user():
