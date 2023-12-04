@@ -7,27 +7,27 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from in_concert.app.app_factory import create_app
+from in_concert.app.app_factory import AppFactory
 from in_concert.app.models import Base
 from in_concert.dependencies.db_session import DBSessionDependency
-from in_concert.settings import Auth0Settings, Auth0SettingsTest
+from in_concert.settings import AppSettings, AppSettingsTest
 from tests.setup import get_bearer_token
 
 
 @pytest.fixture
-def settings_auth() -> Auth0Settings:
-    test_settings_auth = Auth0SettingsTest()
-    return test_settings_auth
+def app_settings_test() -> AppSettings:
+    app_settings_test = AppSettingsTest()
+    return app_settings_test
 
 
 @pytest.fixture()
-def bearer_token(settings_auth) -> dict:
-    return get_bearer_token(settings_auth)
+def bearer_token(app_settings_test) -> dict:
+    return get_bearer_token(app_settings_test)
 
 
 @pytest.fixture()
-def engine(settings_auth) -> Iterator[create_engine]:
-    engine = create_engine(settings_auth.db_connection_string.get_secret_value())
+def engine(app_settings_test) -> Iterator[create_engine]:
+    engine = create_engine(app_settings_test.db_connection_string.get_secret_value())
     yield engine
     Base.metadata.drop_all(engine)
 
@@ -64,6 +64,18 @@ def response_obj(self):
 
 
 @pytest.fixture
-def client(settings_auth, engine):
-    app = create_app(settings_auth, engine=engine)
+def client(app_settings_test, engine):
+    app_factory = AppFactory()
+    app_factory.configure(app_settings_test)
+    app = app_factory.create_app(app_settings_test, engine=engine)
+    return TestClient(app)
+
+
+@pytest.fixture
+def client_no_auth_checks(app_settings_test, engine):
+    """A test client where all security dependencies are overridden."""
+    app_factory = AppFactory()
+    app_factory.configure(app_settings_test)
+    app_factory.user_oauth_integrator.user_authorizer_fga.add_permissions = mock.AsyncMock(return_value=True)
+    app = app_factory.create_app(app_settings_test, engine=engine, override_security_dependencies=True)
     return TestClient(app)

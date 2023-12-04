@@ -1,11 +1,11 @@
 from behave import use_fixture
 
-from tests.features.fixtures import engine, settings_auth, test_client
+from tests.features.fixtures import app_settings_test, engine, test_client
 
 
 def before_tag(context, tag):
-    if tag == "fixture.settings_auth":
-        use_fixture(settings_auth, context)
+    if tag == "fixture.app_settings_test":
+        use_fixture(app_settings_test, context)
     elif tag == "fixture.engine":
         use_fixture(engine, context)
     elif tag == "fixture.test_client":

@@ -28,9 +28,23 @@ class Auth0Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
 
-class Auth0SettingsTest(Auth0Settings):
+class FGAAuthSettings(BaseSettings):
+    fga_api_scheme: str = Field()
+    fga_api_host: str = Field()
+    fga_store_id: str = Field()
+    fga_api_token_issuer: str = Field()
+    fga_api_audience: str = Field()
+    fga_client_id: str = Field()
+    fga_client_secret: str = Field()
+
+
+class AppSettings(Auth0Settings, FGAAuthSettings):
+    pass
+
+
+class AppSettingsTest(AppSettings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env.test", extra="ignore")
 
 
-class Auth0SettingsDev(Auth0Settings):
+class AppSettingsDev(AppSettings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env.dev", extra="ignore")
