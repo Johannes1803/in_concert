@@ -1,0 +1,22 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container my-5">
+  <h1>{{ venue.name }}</h1>
+  <div class="row">
+    <p>
+      <img src="{{ venue.image_link }}" class="img-fluid" alt="venue" />
+    </p>
+  </div>
+  <div class="row">
+    <p>
+      Location: {{ venue.street }}, {{ venue.zip_code }} {{ venue.city }}, {{
+      venue.state }}
+    </p>
+    <p>
+      {% if venue.genres %} genres: {{ venue.genres }} <br />
+      {% endif %} {% if website %} website: {{ venue.website }} <br />
+      {% endif %} phone: {{ venue.phone }}
+    </p>
+  </div>
+</div>
+{% endblock %}
