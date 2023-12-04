@@ -10,7 +10,11 @@
       </p>
     </div>
     <div class="col-8">
-      <h2>{{ venue.name }}</h2>
+      <h2>
+        <a href="{{ url_for('get_venue', object_id=venue.id)}}">
+          {{ venue.name }}</a
+        >
+      </h2>
       <p>
         Location: {{ venue.street }}, {{ venue.zip_code }} {{ venue.city }}, {{
         venue.state }}
