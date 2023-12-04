@@ -156,3 +156,8 @@ class TestApp:
         response = client_no_auth_checks.get("/list_venues")
         assert response.status_code == 200
         assert response.content
+
+    def test_get_venue_should_return_venue(self, client_no_auth_checks, existing_venue_id: int):
+        response = client_no_auth_checks.get(f"/venues/{existing_venue_id}")
+        assert response.status_code == 200
+        assert response.content
