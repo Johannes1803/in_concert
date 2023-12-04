@@ -151,3 +151,8 @@ class TestApp:
         client_no_auth_checks.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client_no_auth_checks.delete("/venues/123")
         assert response.status_code == 404
+
+    def test_list_venue_should_return_venue_list(self, client_no_auth_checks, existing_venue_id: int):
+        response = client_no_auth_checks.get("/list_venues")
+        assert response.status_code == 200
+        assert response.content
