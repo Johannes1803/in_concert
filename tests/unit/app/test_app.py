@@ -161,3 +161,7 @@ class TestApp:
         response = client_no_auth_checks.get(f"/venues/{existing_venue_id}")
         assert response.status_code == 200
         assert response.content
+
+    def test_get_venue_should_return_404_if_venue_not_existing(self, client_no_auth_checks):
+        response = client_no_auth_checks.get("/venues/123")
+        assert response.status_code == 404
