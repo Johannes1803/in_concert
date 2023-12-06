@@ -7,9 +7,6 @@ class UserSchema(BaseModel):
     id: str
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class VenueManagerSchema(UserSchema):
     venues: Optional[list[int]] = Field(default_factory=list)
 
 

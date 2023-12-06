@@ -16,8 +16,8 @@ from starlette_wtf import StarletteForm
 
 from definitions import PROJECT_ROOT
 from in_concert.app.forms import VenueForm
-from in_concert.app.models import Base, User, Venue, VenueManager, delete_db_entry
-from in_concert.app.schemas import UserSchema, VenueManagerSchema, VenueSchema
+from in_concert.app.models import Base, User, Venue, delete_db_entry
+from in_concert.app.schemas import UserSchema, VenueSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
