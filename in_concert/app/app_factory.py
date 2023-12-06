@@ -176,15 +176,20 @@ class AppFactory:
                 ),
             ],
         )
-        def delete_venue(
+        async def delete_venue(
             object_id: int,
             db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
         ):
             try:
                 venue_id = delete_db_entry(db_session, object_id, Venue)
             except KeyError as e:
                 raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-            return {"id": venue_id}
+            else:
+                await self.user_oauth_integrator.user_authorizer_fga.remove_permissions(
+                    request=request, object_type="venue", object_id=venue_id, relations=["can_delete", "can_update"]
+                )
+                return {"id": venue_id}
 
         @app.get("/list_venues")
         def list_venues(

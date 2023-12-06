@@ -180,6 +180,36 @@ class UserAuthorizerFGA:
                 await fga_client.close()
         return
 
+    async def remove_permissions(
+        self, request: Request, object_type: str, object_id: int, relations: list[str]
+    ) -> None:
+        """Remove permissions for user w.r.t. specified object.
+
+        :param object_type: type of object
+        :param object_id: id of object
+        :param relations: relations to remove from object
+        """
+        user_id: str = await self.user_authorizer_jwt.get_current_user_id(request)
+        user: str = f"user:{user_id}"
+        object_: str = f"{object_type}:{object_id}"
+
+        options = {"store_id": self.fga_configuration.store_id}
+        for relation in relations:
+            body = ClientWriteRequest(
+                deletes=[
+                    ClientTuple(
+                        user=user,
+                        relation=relation,
+                        object=object_,
+                    ),
+                ],
+            )
+            async with OpenFgaClient(self.fga_configuration) as fga_client:
+                # Enter a context with an instance of the OpenFgaClient
+                await fga_client.write(body, options)
+                await fga_client.close()
+        return
+
 
 class UserABC(abc.ABC):
     @abc.abstractmethod
