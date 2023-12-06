@@ -78,5 +78,6 @@ def client_no_auth_checks(app_settings_test, engine):
     app_factory = AppFactory()
     app_factory.configure(app_settings_test)
     app_factory.user_oauth_integrator.user_authorizer_fga.add_permissions = mock.AsyncMock(return_value=True)
+    app_factory.user_oauth_integrator.user_authorizer_fga.remove_permissions = mock.AsyncMock()
     app = app_factory.create_app(app_settings_test, engine=engine, override_security_dependencies=True)
     return TestClient(app)

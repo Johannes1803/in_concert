@@ -83,6 +83,7 @@ class AppFactory:
         self, app_settings: AppSettings, engine: engine, override_security_dependencies: bool = False
     ) -> FastAPI:
         app = FastAPI()
+        app.user_oauth_integrator = self.user_oauth_integrator
 
         # configure jwt auth
         app.add_middleware(SessionMiddleware, secret_key=app_settings.middleware_secret_key)

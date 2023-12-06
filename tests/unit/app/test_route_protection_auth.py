@@ -99,9 +99,9 @@ class TestApp:
         self, client, existing_venue_id_with_delete_permissions: int, db_session: Session, bearer_token
     ):
         """
-        Test negative case fine grained access control.
+        Test positive case fine grained access control.
 
-        Test that a logged in user with insufficient fine-grained acccess control permissions gets a 403 response when
+        Test that a logged in user with sufficient fine-grained acccess control permissions gets a 200 response when
         trying to access a private route.
         """
         client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
@@ -111,3 +111,17 @@ class TestApp:
 
         response = client.delete(f"/venues/{existing_venue_id_with_delete_permissions}")
         assert response.status_code == 200
+
+    def test_fga_scope_permissions_removed_on_object_deletion(
+        self, client, existing_venue_id_with_delete_permissions: int, db_session: Session, bearer_token
+    ):
+        """
+        Test fga scope permissions are removed on object deletion.
+        """
+        client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
+        with db_session:
+            venue = db_session.get(Venue, existing_venue_id_with_delete_permissions)
+        assert venue
+
+        _ = client.delete(f"/venues/{existing_venue_id_with_delete_permissions}")
+        client.app.user_oauth_integrator.user_authorizer_fga.remove_permissions.assert_called_once()
