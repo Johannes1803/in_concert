@@ -67,6 +67,7 @@ def response_obj(self):
 def client(app_settings_test, engine):
     app_factory = AppFactory()
     app_factory.configure(app_settings_test)
+    app_factory.user_oauth_integrator.user_authorizer_fga.remove_permissions = mock.AsyncMock()
     app = app_factory.create_app(app_settings_test, engine=engine)
     return TestClient(app)
 
