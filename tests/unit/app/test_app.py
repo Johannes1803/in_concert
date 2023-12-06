@@ -52,15 +52,6 @@ class TestApp:
         assert response.json()
         assert response.json()["id"] == "sub_id_123"
 
-    def test_post_venue_manager_should_create_venue_manager_in_db(
-        self,
-        client_no_auth_checks,
-    ):
-        response = client_no_auth_checks.post("/venue_managers", json={"id": "sub_id_123"})
-        assert response.status_code == 201
-        assert response.json()
-        assert response.json()["id"] == "sub_id_123"
-
     def test_post_venue_should_return_id_of_new_venue(self, client_no_auth_checks, bearer_token):
         client_no_auth_checks.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         response = client_no_auth_checks.post(

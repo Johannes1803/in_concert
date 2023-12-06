@@ -131,16 +131,6 @@ class AppFactory:
             user_id: int = user.insert(db_session)
             return {"id": user_id}
 
-        @app.post("/venue_managers", status_code=201)
-        async def create_venue_manager(
-            venue_manager_Schema: VenueManagerSchema,
-            db_session: Annotated[Any, Depends(db_session_dep)],
-            request: Request,
-        ):
-            venue_manager = VenueManager(**venue_manager_Schema.model_dump())
-            venue_manager_id: int = venue_manager.insert(db_session)
-            return {"id": venue_manager_id}
-
         @app.api_route(
             "/venues",
             methods=["GET", "POST"],

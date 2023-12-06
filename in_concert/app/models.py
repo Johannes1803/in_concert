@@ -29,8 +29,8 @@ class Venue(Base):
     website: Mapped[str] = mapped_column(String(30), nullable=True)
     image_link: Mapped[str] = mapped_column(String(), nullable=True)
     genres: Mapped[str] = mapped_column(String(30), nullable=True)
-    manager_id: Mapped[int] = mapped_column(ForeignKey("venue_managers.id"))
-    manager: Mapped["VenueManager"] = relationship(back_populates="venues")
+    manager_id: Mapped[int] = mapped_column(ForeignKey("user_account.id"))
+    manager: Mapped["User"] = relationship(back_populates="venues")
 
     def __repr__(self):
         return f"<Venue {self.id} {self.name}>"
@@ -39,12 +39,6 @@ class Venue(Base):
 class User(Base):
     __tablename__ = "user_account"
     id: Mapped[str] = mapped_column(String(30), primary_key=True)
-
-
-class VenueManager(User):
-    __tablename__ = "venue_managers"
-
-    id: Mapped[int] = mapped_column(ForeignKey("user_account.id"), primary_key=True)
     venues: Mapped[List[Venue]] = relationship(back_populates="manager")
 
 
