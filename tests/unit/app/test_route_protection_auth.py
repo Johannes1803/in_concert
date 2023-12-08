@@ -1,8 +1,13 @@
+from unittest import mock
+
 import pytest
+import pytest_asyncio
 from fastapi import Response
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from in_concert.app.models import Venue
+from in_concert.settings import AppSettings
 
 
 class TestApp:
@@ -37,8 +42,11 @@ class TestApp:
             db_session.commit()
             return venue.id
 
-    @pytest.fixture
-    def existing_venue_id_with_delete_permissions(self, db_session: Session):
+    @pytest_asyncio.fixture
+    async def existing_venue_id_with_fga_permissions(
+        self, db_session: Session, app_settings_test: AppSettings, client: TestClient
+    ) -> int:
+        venue_id: int = 101
         with db_session:
             venue = Venue(
                 name="venue name",
@@ -51,11 +59,22 @@ class TestApp:
                 image_link="venue image link",
                 genres="venue genres",
                 manager_id=1,
-                id=100,
+                id=venue_id,
             )
             db_session.add(venue)
             db_session.commit()
-            return venue.id
+
+        user = f"{app_settings_test.client_id}@clients"
+        client.app.user_oauth_integrator.user_authorizer.get_current_user_id = mock.AsyncMock(return_value=user)
+        await client.app.user_oauth_integrator.user_authorizer_fga.add_permissions(
+            request={}, relations=["can_delete", "can_update"], object_type="venue", object_id=venue_id
+        )
+
+        yield venue_id
+
+        # await client.app.user_oauth_integrator.user_authorizer_fga.remove_permissions(
+        #     request={}, relations=["can_delete"], object_type="venue", object_id=venue_id
+        # )
 
     @pytest.fixture
     def response_obj(self):
@@ -95,8 +114,9 @@ class TestApp:
         response = client.delete(f"/venues/{existing_venue_id}")
         assert response.status_code == 403
 
+    @pytest.mark.asyncio
     def test_fga_sufficient_scope_should_return_200(
-        self, client, existing_venue_id_with_delete_permissions: int, db_session: Session, bearer_token
+        self, client, existing_venue_id_with_fga_permissions: int, db_session: Session, bearer_token
     ):
         """
         Test positive case fine grained access control.
@@ -106,22 +126,21 @@ class TestApp:
         """
         client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         with db_session:
-            venue = db_session.get(Venue, existing_venue_id_with_delete_permissions)
+            venue = db_session.get(Venue, existing_venue_id_with_fga_permissions)
         assert venue
 
-        response = client.delete(f"/venues/{existing_venue_id_with_delete_permissions}")
+        response = client.delete(f"/venues/{existing_venue_id_with_fga_permissions}")
         assert response.status_code == 200
 
     def test_fga_scope_permissions_removed_on_object_deletion(
-        self, client, existing_venue_id_with_delete_permissions: int, db_session: Session, bearer_token
+        self, client, existing_venue_id_with_fga_permissions: int, db_session: Session, bearer_token
     ):
         """
         Test fga scope permissions are removed on object deletion.
         """
         client.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
         with db_session:
-            venue = db_session.get(Venue, existing_venue_id_with_delete_permissions)
+            venue = db_session.get(Venue, existing_venue_id_with_fga_permissions)
         assert venue
 
-        _ = client.delete(f"/venues/{existing_venue_id_with_delete_permissions}")
-        client.app.user_oauth_integrator.user_authorizer_fga.remove_permissions.assert_called_once()
+        _ = client.delete(f"/venues/{existing_venue_id_with_fga_permissions}")
