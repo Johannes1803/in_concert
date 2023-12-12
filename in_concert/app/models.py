@@ -60,3 +60,13 @@ def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
             session.delete(db_entry)
 
     return db_entry_id
+
+
+class Band(Base):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    city: Mapped[str] = mapped_column(String(30), nullable=True)
+    zip_code: Mapped[int] = mapped_column(Integer(), nullable=True)
+    state: Mapped[str] = mapped_column(String(30), nullable=True)
+    website_link: Mapped[str] = mapped_column(String(120), nullable=True)
+    image_link: Mapped[str] = mapped_column(String(), nullable=True)

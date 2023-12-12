@@ -23,3 +23,12 @@ class VenueSchema(BaseModel):
     manager_id: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class BandSchema(BaseModel):
+    name: str
+    city: Optional[str]
+    zip_code: Optional[int]
+    state: Optional[str]
+    website_link: Optional[str]
+    image_link: Optional[str]
