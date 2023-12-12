@@ -207,7 +207,7 @@ class AppFactory:
             db_session: Annotated[Any, Depends(db_session_dep)],
             request: Request,
         ):
-            venue = db_session.query(Venue).get(object_id)
+            venue = db_session.get(Venue, object_id)
             if not venue:
                 raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Venue not found")
             html = templates.TemplateResponse("venue.html", {"venue": venue, "request": request})

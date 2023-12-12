@@ -115,7 +115,7 @@ class TestApp:
         assert response.status_code == 403
 
     @pytest.mark.asyncio
-    def test_fga_sufficient_scope_should_return_200(
+    async def test_fga_sufficient_scope_should_return_200(
         self, client, existing_venue_id_with_fga_permissions: int, db_session: Session, bearer_token
     ):
         """
