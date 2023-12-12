@@ -63,6 +63,7 @@ def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
 
 
 class Band(Base):
+    __tablename__ = "bands"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     city: Mapped[str] = mapped_column(String(30), nullable=True)
