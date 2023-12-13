@@ -71,3 +71,4 @@ class Band(Base):
     state: Mapped[str] = mapped_column(String(30), nullable=True)
     website_link: Mapped[str] = mapped_column(String(120), nullable=True)
     image_link: Mapped[str] = mapped_column(String(), nullable=True)
+    genres: Mapped[str] = mapped_column(String(120), nullable=True)

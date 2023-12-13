@@ -32,3 +32,4 @@ class BandSchema(BaseModel):
     state: Optional[str]
     website_link: Optional[str]
     image_link: Optional[str]
+    genres: Optional[str]
