@@ -31,6 +31,17 @@ class TestApp:
             db_session.commit()
             return venue.id
 
+    @pytest.fixture
+    def existing_band_id(self, db_session: Session):
+        with db_session:
+            band = Band(
+                name="band name",
+                city="band city",
+            )
+            db_session.add(band)
+            db_session.commit()
+            return band.id
+
     def test_create_app_should_return_fast_api_app(self, app_settings_test, engine):
         app_factory = AppFactory()
         app_factory.configure(app_settings_test)
@@ -201,3 +212,12 @@ class TestApp:
         response = client_no_auth_checks.get("/list_bands")
         assert response.status_code == 200
         assert response.content
+
+    def test_get_band_should_return_band(self, client_no_auth_checks, existing_band_id: int):
+        response = client_no_auth_checks.get(f"/bands/{existing_band_id}")
+        assert response.status_code == 200
+        assert response.content
+
+    def test_get_band_should_return_404_if_band_not_existing(self, client_no_auth_checks):
+        response = client_no_auth_checks.get("/bands/123")
+        assert response.status_code == 404
