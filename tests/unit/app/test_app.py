@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
 from in_concert.app.app_factory import AppFactory
-from in_concert.app.models import Venue
+from in_concert.app.models import Band, Venue
 
 
 class TestApp:
@@ -156,3 +156,46 @@ class TestApp:
     def test_get_venue_should_return_404_if_venue_not_existing(self, client_no_auth_checks):
         response = client_no_auth_checks.get("/venues/123")
         assert response.status_code == 404
+
+    def test_post_band_should_create_band_in_db(self, client_no_auth_checks, db_session: Session, bearer_token):
+        client_no_auth_checks.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
+        response = client_no_auth_checks.post(
+            "/bands",
+            data={
+                "name": "band name",
+                "city": "band city",
+                "state": "band state",
+                "zip_code": 12345,
+                "website": "band website",
+                "image_link": "band image link",
+                "genres": "band genres",
+            },
+        )
+        band_id = response.json()["id"]
+
+        with db_session:
+            band = db_session.get(Band, band_id)
+        assert band
+
+    def test_post_band_with_missing_data_should_resend_form(self, client_no_auth_checks, bearer_token):
+        client_no_auth_checks.cookies = {"access_token": f'Bearer {bearer_token["access_token"]}'}
+        response = client_no_auth_checks.post(
+            "/bands",
+            # missing name
+            data={
+                "city": "band city",
+                "state": "band state",
+                "zip_code": 12345,
+                "website": "band website",
+                "image_link": "band image link",
+                "genres": "band genres",
+            },
+        )
+        assert response.status_code == 200
+
+        html_response = response.content.decode(response.charset_encoding)
+        # test previous user input is saved in form if validation fails
+        assert 'value="band city"' in html_response
+
+
+#
