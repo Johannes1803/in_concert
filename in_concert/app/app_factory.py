@@ -254,6 +254,18 @@ class AppFactory:
             html = templates.TemplateResponse("bands.html", {"bands": bands, "request": request})
             return html
 
+        @app.get("/bands/{object_id:int}")
+        def get_band(
+            object_id: int,
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
+        ):
+            band = db_session.get(Band, object_id)
+            if not band:
+                raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="band not found")
+            html = templates.TemplateResponse("band.html", {"band": band, "request": request})
+            return html
+
         if override_security_dependencies:
 
             async def dummy_is_authorized_current_user():

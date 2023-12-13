@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container my-5">
+  <h1>{{ band.name }}</h1>
+  <div class="row">
+    <p>
+      <img src="{{ band.image_link }}" class="img-fluid" alt="band" />
+    </p>
+  </div>
+  <div class="row">
+    <p>
+      {% if band.genres %} genres: {{ band.genres }} <br />
+      {% endif %}
+    </p>
+  </div>
+</div>
+{% endblock %}
