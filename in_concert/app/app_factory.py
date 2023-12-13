@@ -245,6 +245,15 @@ class AppFactory:
             html = templates.TemplateResponse("band_form.html", {"form": band_form, "request": request})
             return html
 
+        @app.get("/list_bands")
+        def list_bands(
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            request: Request,
+        ):
+            bands = db_session.query(Band).all()
+            html = templates.TemplateResponse("bands.html", {"bands": bands, "request": request})
+            return html
+
         if override_security_dependencies:
 
             async def dummy_is_authorized_current_user():
