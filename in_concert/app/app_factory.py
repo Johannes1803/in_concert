@@ -15,9 +15,9 @@ from starlette.status import HTTP_404_NOT_FOUND
 from starlette_wtf import StarletteForm
 
 from definitions import PROJECT_ROOT
-from in_concert.app.forms import VenueForm
-from in_concert.app.models import Base, User, Venue, delete_db_entry
-from in_concert.app.schemas import UserSchema, VenueSchema
+from in_concert.app.forms import BandForm, VenueForm
+from in_concert.app.models import Band, Base, User, Venue, delete_db_entry
+from in_concert.app.schemas import BandSchema, UserSchema, VenueSchema
 from in_concert.dependencies.auth.token_validation import (
     HTTPBearerWithCookie,
     JwkTokenVerifier,
@@ -211,6 +211,38 @@ class AppFactory:
             if not venue:
                 raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Venue not found")
             html = templates.TemplateResponse("venue.html", {"venue": venue, "request": request})
+            return html
+
+        @app.api_route(
+            "/bands",
+            methods=["GET", "POST"],
+            dependencies=[
+                Security(
+                    self.user_oauth_integrator.user_authorizer.is_authorized_current_user, scopes=("create:bands",)
+                ),
+            ],
+        )
+        async def create_band(
+            db_session: Annotated[Any, Depends(db_session_dep)],
+            user_id: Annotated[str, Depends(self.user_oauth_integrator.user_authorizer.get_current_user_id)],
+            request: Request,
+            response: Response,
+        ):
+            band_form: StarletteForm = await BandForm.from_formdata(request)
+            if await band_form.validate_on_submit():
+                band_form_dict = band_form.data.copy()
+                band_schema = BandSchema(**band_form_dict)
+                band = Band(**band_schema.model_dump())
+                band_id: int = band.insert(db_session)
+                response.status_code = 201
+
+                await self.user_oauth_integrator.user_authorizer_fga.add_permissions(
+                    request, ["can_delete", "can_update"], "band", band_id
+                )
+
+                return {"id": band_id}
+
+            html = templates.TemplateResponse("band_form.html", {"form": band_form, "request": request})
             return html
 
         if override_security_dependencies:
