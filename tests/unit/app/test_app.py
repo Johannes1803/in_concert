@@ -197,5 +197,7 @@ class TestApp:
         # test previous user input is saved in form if validation fails
         assert 'value="band city"' in html_response
 
-
-#
+    def test_list_bands_should_return_bands_list(self, client_no_auth_checks):
+        response = client_no_auth_checks.get("/list_bands")
+        assert response.status_code == 200
+        assert response.content
