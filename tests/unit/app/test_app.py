@@ -37,6 +37,7 @@ class TestApp:
             band = Band(
                 name="band name",
                 city="band city",
+                manager_id=2,
             )
             db_session.add(band)
             db_session.commit()

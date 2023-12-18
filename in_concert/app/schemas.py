@@ -33,3 +33,4 @@ class BandSchema(BaseModel):
     website_link: Optional[str]
     image_link: Optional[str]
     genres: Optional[str]
+    manager_id: str

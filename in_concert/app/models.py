@@ -72,3 +72,5 @@ class Band(Base):
     website_link: Mapped[str] = mapped_column(String(120), nullable=True)
     image_link: Mapped[str] = mapped_column(String(), nullable=True)
     genres: Mapped[str] = mapped_column(String(120), nullable=True)
+    manager_id: Mapped[int] = mapped_column(ForeignKey("user_account.id"))
+    manager: Mapped["User"] = relationship(back_populates="bands")
