@@ -231,6 +231,7 @@ class AppFactory:
             band_form: StarletteForm = await BandForm.from_formdata(request)
             if await band_form.validate_on_submit():
                 band_form_dict = band_form.data.copy()
+                band_form_dict["manager_id"] = user_id
                 band_schema = BandSchema(**band_form_dict)
                 band = Band(**band_schema.model_dump())
                 band_id: int = band.insert(db_session)
