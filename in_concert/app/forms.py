@@ -5,6 +5,7 @@ from wtforms.validators import DataRequired, Length
 
 class VenueForm(StarletteForm):
     name = StringField("name", validators=[DataRequired(), Length(min=2, max=30)])
+    about = StringField("about", validators=[Length(max=120)])
     street = StringField("street", validators=[DataRequired(), Length(max=30)])
     city = StringField("city", validators=[DataRequired(), Length(max=30)])
     zip_code = IntegerField("zip_code", validators=[DataRequired()])
