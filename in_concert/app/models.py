@@ -40,6 +40,7 @@ class User(Base):
     __tablename__ = "user_account"
     id: Mapped[str] = mapped_column(String(30), primary_key=True)
     venues: Mapped[List[Venue]] = relationship(back_populates="manager")
+    bands: Mapped[List["Band"]] = relationship(back_populates="manager")
 
 
 def delete_db_entry(session: Session, id: int, model_class: Base) -> int:
