@@ -21,6 +21,7 @@ class Venue(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
+    about: Mapped[str] = mapped_column(String(120), nullable=True)
     street: Mapped[str] = mapped_column(String(30))
     city: Mapped[str] = mapped_column(String(30))
     zip_code: Mapped[int] = mapped_column(Integer())

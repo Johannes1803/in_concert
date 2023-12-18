@@ -17,20 +17,21 @@ class VenueSchema(BaseModel):
     state: str
     zip_code: int
     phone: int
-    website: Optional[str]
-    image_link: Optional[str]
-    genres: Optional[str]
+    website: Optional[str] = None
+    image_link: Optional[str] = None
+    genres: Optional[str] = None
     manager_id: str
+    about: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class BandSchema(BaseModel):
     name: str
-    city: Optional[str]
-    zip_code: Optional[int]
-    state: Optional[str]
-    website_link: Optional[str]
-    image_link: Optional[str]
-    genres: Optional[str]
+    city: Optional[str] = None
+    zip_code: Optional[int] = None
+    state: Optional[str] = None
+    website_link: Optional[str] = None
+    image_link: Optional[str] = None
+    genres: Optional[str] = None
     manager_id: str
